@@ -7,12 +7,12 @@ namespace TableIT.Server.Controllers
     public class WebHubController : ControllerBase
     {
         private readonly ILogger<WebHubController> _logger;
-        //private readonly BroadcastHub _hub;
+        private readonly BroadcastHub _hub;
 
-        public WebHubController(ILogger<WebHubController> logger)
+        public WebHubController(ILogger<WebHubController> logger, BroadcastHub hub)
         {
             _logger = logger;
-            //_hub = hub;
+            _hub = hub;
         }
 
         [HttpPost(Name = "SendMessage")]

@@ -9,11 +9,13 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
   <Grid>
-    <ScrollViewer ZoomMode="Enabled">
-      <StackPanel>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
         <TextBlock x:Name="Text" Text="Some text" />
-        <Image Source="Images/Docks.jpg" />
-      </StackPanel>
+    <ScrollViewer ZoomMode="Enabled" Grid.Row="1" CanDrag="True" ZoomSnapPointsType="None">
+      <Image Source="Images/Docks.jpg" />
     </ScrollViewer>
   </Grid>
 </Page>

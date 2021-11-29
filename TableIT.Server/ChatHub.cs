@@ -1,21 +1,19 @@
 ﻿namespace TableIT.Server
 {
-    public class BroadcastHub : Microsoft.AspNetCore.SignalR.Hub
+    public interface IBroadcast
     {
-        private readonly TimeSpan _updateInterval =
-            TimeSpan.FromMilliseconds(250);
-        private Timer _timer;
+        void Notify(DateTime now);
+    }
 
-        public BroadcastHub()
+    public class BroadcastHub : Microsoft.AspNetCore.SignalR.Hub<IBroadcast>
+    {
+        public void NotifyAll()
         {
-            _timer = new Timer(Broadcast, null, _updateInterval, _updateInterval);
+            
+            if (Clients is { } clients)
+            {
+                clients.All.Notify(DateTime.Now);
+            }
         }
-
-        public void Broadcast(object state)
-        {
-            if (Clients is null) return;
-            Clients.All.SendCoreAsync("Broadcast", new object[] { DateTime.Now });
-        }
-
     }
 }

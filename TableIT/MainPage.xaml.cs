@@ -17,15 +17,14 @@ namespace TableIT
         {
             InitializeComponent();
 
-            var hb = new HubConnection("https://tableitserver.azurewebsites.net", "/signalr");
+            var hb = new HubConnection("https://tableitserver.azurewebsites.net", true);
             var hubProxy = hb.CreateHubProxy("BroadcastHub");
 
             hb.Received += Hb_Received;
             hb.StateChanged += Hb_StateChanged;
             hb.Reconnecting += Hb_Reconnecting;
             hb.Reconnected += Hb_Reconnected;
-            hubProxy
-            .On<DateTime>("Broadcast",
+            hubProxy.On<DateTime>("Broadcast",
                           async data =>
                                 await Dispatcher
                                       .RunAsync(CoreDispatcherPriority.Normal,
@@ -36,7 +35,7 @@ namespace TableIT
 
         private void Hb_Reconnected()
         {
-            Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 Text.Text = $"Reconnected";
             });
@@ -44,7 +43,7 @@ namespace TableIT
 
         private void Hb_Reconnecting()
         {
-            Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 Text.Text = $"Reconnecting...";
             });
@@ -52,7 +51,7 @@ namespace TableIT
 
         private void Hb_StateChanged(StateChange obj)
         {
-            Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 Text.Text = $"State: {obj.OldState} => {obj.NewState}";
             });
