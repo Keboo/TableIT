@@ -1,8 +1,7 @@
-﻿using Windows.UI.Xaml.Controls;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Client;
-using System;
+﻿using System;
+using System.Threading.Tasks;
 using Windows.UI.Core;
+using Windows.UI.Xaml.Controls;
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace TableIT
@@ -12,50 +11,76 @@ namespace TableIT
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        HubConnection hb;
+        ClientHandler _client;
+        ServerHandler _server;
+        //HubConnection hb;
         public MainPage()
         {
             InitializeComponent();
 
-            var hb = new HubConnection("https://tableitserver.azurewebsites.net", true);
-            var hubProxy = hb.CreateHubProxy("BroadcastHub");
+            //ServiceEndpoint se = new("Endpoint=https://tableit.service.signalr.net;AccessKey=ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=;Version=1.0;");
 
-            hb.Received += Hb_Received;
-            hb.StateChanged += Hb_StateChanged;
-            hb.Reconnecting += Hb_Reconnecting;
-            hb.Reconnected += Hb_Reconnected;
-            hubProxy.On<DateTime>("Broadcast",
-                          async data =>
-                                await Dispatcher
-                                      .RunAsync(CoreDispatcherPriority.Normal,
-                                                () => Text.Text = data.ToString()));
-            hb.Start();
-
-        }
-
-        private void Hb_Reconnected()
-        {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            Task.Run(async () =>
             {
-                Text.Text = $"Reconnected";
+                try
+                {
+                    _client = new ClientHandler("Endpoint=https://tableit.service.signalr.net;AccessKey=ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=;Version=1.0;", 
+                        "TestHub", "test-user", 
+                        async data => await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Text.Text = data));
+
+                    await _client.StartAsync();
+                }
+                catch (Exception ex)
+                { }
             });
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    _server = new ServerHandler("Endpoint=https://tableit.service.signalr.net;AccessKey=ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=;Version=1.0;", "TestHub");
+
+                    await _server.Start();
+                }
+                catch(Exception ex)
+                { }
+            });
+            //hb.Received += Hb_Received;
+            //hb.StateChanged += Hb_StateChanged;
+            //hb.Reconnecting += Hb_Reconnecting;
+            //hb.Reconnected += Hb_Reconnected;
+            //hubProxy.On<DateTime>("Broadcast",
+            //              async data =>
+            //                    await Dispatcher
+            //                          .RunAsync(CoreDispatcherPriority.Normal,
+            //                                    () => Text.Text = data.ToString()));
+            //hb.Start();
+
         }
 
-        private void Hb_Reconnecting()
-        {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                Text.Text = $"Reconnecting...";
-            });
-        }
+        //private void Hb_Reconnected()
+        //{
+        //    Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+        //    {
+        //        Text.Text = $"Reconnected";
+        //    });
+        //}
 
-        private void Hb_StateChanged(StateChange obj)
-        {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                Text.Text = $"State: {obj.OldState} => {obj.NewState}";
-            });
-        }
+        //private void Hb_Reconnecting()
+        //{
+        //    Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+        //    {
+        //        Text.Text = $"Reconnecting...";
+        //    });
+        //}
+
+        //private void Hb_StateChanged(StateChange obj)
+        //{
+        //    Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+        //    {
+        //        Text.Text = $"State: {obj.OldState} => {obj.NewState}";
+        //    });
+        //}
 
         private void Hb_Received(string obj)
         {

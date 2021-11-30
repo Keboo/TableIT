@@ -9,7 +9,6 @@
     {
         public void NotifyAll()
         {
-            
             if (Clients is { } clients)
             {
                 clients.All.Notify(DateTime.Now);

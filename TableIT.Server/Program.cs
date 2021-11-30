@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<BroadcastHub>();
 
-builder.Services.AddHostedService<PostService>();
+//builder.Services.AddHostedService<PostService>();
 
 var app = builder.Build();
 
