@@ -34,17 +34,17 @@ namespace TableIT
                 { }
             });
 
-            Task.Run(async () =>
-            {
-                try
-                {
-                    _server = new ServerHandler("Endpoint=https://tableit.service.signalr.net;AccessKey=ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=;Version=1.0;", "TestHub");
+            //Task.Run(async () =>
+            //{
+            //    try
+            //    {
+            //        _server = new ServerHandler("Endpoint=https://tableit.service.signalr.net;AccessKey=ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=;Version=1.0;", "TestHub");
 
-                    await _server.Start();
-                }
-                catch(Exception ex)
-                { }
-            });
+            //        await _server.Start();
+            //    }
+            //    catch(Exception ex)
+            //    { }
+            //});
             //hb.Received += Hb_Received;
             //hb.StateChanged += Hb_StateChanged;
             //hb.Reconnecting += Hb_Reconnecting;
