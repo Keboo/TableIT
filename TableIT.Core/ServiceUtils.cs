@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace TableIT
+namespace TableIT.Core
 {
     public class ServiceUtils
     {

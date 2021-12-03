@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace TableIT
+namespace TableIT.Core
 {
     public class ClientHandler
     {

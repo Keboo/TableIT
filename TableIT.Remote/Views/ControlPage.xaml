@@ -16,10 +16,14 @@
         <ColumnDefinition Width="80" />
       </Grid.ColumnDefinitions>
 
+      <!--
+      NB: The anchors are to work around an Android issue
+      https://github.com/dotnet/maui/issues/3398#issuecomment-985268105
+      -->
       <Button ImageSource="arrow.svg" GridLayout.Column="1" GridLayout.Row="0" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="2" GridLayout.Row="1" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="1" GridLayout.Row="2" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="0" GridLayout.Row="1" />
+      <Button ImageSource="arrow.svg" GridLayout.Column="2" GridLayout.Row="1" Rotation="90" AnchorX="0.51" AnchorY="0.51" />
+      <Button ImageSource="arrow.svg" GridLayout.Column="1" GridLayout.Row="2" Rotation="180" AnchorX="0.51" AnchorY="0.51"/>
+      <Button ImageSource="arrow.svg" GridLayout.Column="0" GridLayout.Row="1" Rotation="270" AnchorX="0.51" AnchorY="0.51"/>
 
     </Grid>
   </Grid>

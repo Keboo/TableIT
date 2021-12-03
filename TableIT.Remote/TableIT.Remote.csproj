@@ -56,6 +56,10 @@
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\TableIT.Core\TableIT.Core.csproj" />
+	</ItemGroup>
+
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<OutputType>WinExe</OutputType>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
