@@ -17,12 +17,12 @@ namespace TableIT.Core
             _connection = new HubConnectionBuilder()
                 .WithUrl(url, option =>
                 {
-                    option.AccessTokenProvider = () =>
-                    {
-                        return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
-                    };
+                    //option.AccessTokenProvider = () =>
+                    //{
+                    //    return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
+                    //};
                 }).Build();
-
+            
             _connection.On<string, string>("SendMessage",
                 (string server, string message) =>
                 {

@@ -90,12 +90,10 @@ namespace TableIT.Core
                 // rather than buffer the entire response. This gives a small perf boost.
                 // Note that it is important to dispose of the response when doing this to
                 // avoid leaving the connection open.
-                using (var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                using var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                if (response.StatusCode != HttpStatusCode.Accepted)
                 {
-                    if (response.StatusCode != HttpStatusCode.Accepted)
-                    {
-                        Console.WriteLine($"Sent error: {response.StatusCode}");
-                    }
+                    Console.WriteLine($"Sent error: {response.StatusCode}");
                 }
             }
         }
@@ -137,7 +135,6 @@ namespace TableIT.Core
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", _serviceUtils.GenerateAccessToken(url, _serverName));
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //request.Content = new StringContent(JsonConvert.SerializeObject(_defaultPayloadMessage), Encoding.UTF8, "application/json");
             request.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(_defaultPayloadMessage), Encoding.UTF8, "application/json");
 
             return request;
