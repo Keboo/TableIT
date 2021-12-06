@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 using System;
+using TableIT.Remote.ViewModels;
 
 namespace TableIT.Remote.Views
 {
@@ -9,12 +10,21 @@ namespace TableIT.Remote.Views
         
         public ControlPage()
         {
+            BindingContext = new ControlPageViewModel();
             InitializeComponent();
-        }
 
-        private void OnCounterClicked(object sender, EventArgs e)
-        {
-        
+            AdjustButton(UpButton);
+            AdjustButton(RightButton);
+            AdjustButton(DownButton);
+            AdjustButton(LeftButton);
+
+            static void AdjustButton(Button button)
+            {
+                button.AnchorX = 0;
+                button.AnchorX = 0.5;
+                button.AnchorY = 0;
+                button.AnchorY = 0.5;
+            }
         }
     }
 }

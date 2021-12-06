@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Server", "TableIT.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Remote", "TableIT.Remote\TableIT.Remote.csproj", "{CBB4A04D-6F1B-47E2-B2D1-ABC306794D37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableIT.Core", "TableIT.Core\TableIT.Core.csproj", "{0CBD0A53-6561-4094-B533-DBC9366A2435}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Core", "TableIT.Core\TableIT.Core.csproj", "{0CBD0A53-6561-4094-B533-DBC9366A2435}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,9 +25,9 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.Build.0 = Debug|x64
-		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.ActiveCfg = Debug|ARM
+		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.Build.0 = Debug|ARM
+		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|Any CPU.Deploy.0 = Debug|ARM
 		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|ARM.ActiveCfg = Debug|ARM
 		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|ARM.Build.0 = Debug|ARM
 		{FE5E75B3-D4C6-450E-A3F8-957718389981}.Debug|ARM.Deploy.0 = Debug|ARM

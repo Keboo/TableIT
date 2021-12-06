@@ -1,6 +1,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TableIT.Remote.ViewModels"
              x:Class="TableIT.Remote.Views.ControlPage"
+             x:DataType="vm:ControlPageViewModel"
              BackgroundColor="{DynamicResource SecondaryColor}">
 
   <Grid>
@@ -8,6 +10,8 @@
       <Grid.RowDefinitions>
         <RowDefinition Height="80" />
         <RowDefinition Height="80" />
+        <RowDefinition Height="80" />
+        <RowDefinition Height="20" />
         <RowDefinition Height="80" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
@@ -20,10 +24,44 @@
       NB: The anchors are to work around an Android issue
       https://github.com/dotnet/maui/issues/3398#issuecomment-985268105
       -->
-      <Button ImageSource="arrow.svg" GridLayout.Column="1" GridLayout.Row="0" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="2" GridLayout.Row="1" Rotation="90" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="1" GridLayout.Row="2" Rotation="180" />
-      <Button ImageSource="arrow.svg" GridLayout.Column="0" GridLayout.Row="1" Rotation="270" />
+      <Button x:Name="UpButton"
+              Command="{Binding PanCommand}"
+              CommandParameter="{x:Static vm:PanDirection.Up}"
+              ImageSource="arrow.svg" 
+              GridLayout.Column="1"
+              GridLayout.Row="0" />
+      <Button x:Name="RightButton"
+              Command="{Binding PanCommand}"
+              CommandParameter="{x:Static vm:PanDirection.Right}"
+              ImageSource="arrow.svg"
+              GridLayout.Column="2"
+              GridLayout.Row="1"
+              Rotation="90" />
+      <Button x:Name="DownButton"
+              Command="{Binding PanCommand}"
+              CommandParameter="{x:Static vm:PanDirection.Down}"
+              ImageSource="arrow.svg"
+              GridLayout.Column="1"
+              GridLayout.Row="2"
+              Rotation="180" />
+      <Button x:Name="LeftButton"
+              Command="{Binding PanCommand}"
+              CommandParameter="{x:Static vm:PanDirection.Left}"
+              ImageSource="arrow.svg"
+              GridLayout.Column="0"
+              GridLayout.Row="1"
+              Rotation="270" />
+
+      <Button Command="{Binding ZoomCommand}"
+              CommandParameter="-0.1"
+              ImageSource="magify_minus.svg"
+              GridLayout.Column="0"
+              GridLayout.Row="4" />
+      <Button Command="{Binding ZoomCommand}"
+              CommandParameter="0.1"
+              ImageSource="magify_plus.svg"
+              GridLayout.Column="2"
+              GridLayout.Row="4"/>
 
     </Grid>
   </Grid>

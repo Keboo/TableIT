@@ -13,8 +13,20 @@
       <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
-        <TextBlock x:Name="Text" Text="Some text" />
-    <ScrollViewer ZoomMode="Enabled" Grid.Row="1" CanDrag="True" ZoomSnapPointsType="None">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <TextBlock x:Name="Text" Text="Some text" />
+    <ScrollViewer ZoomMode="Enabled"
+                  Grid.Column="0"
+                  Grid.Row="1"
+                  CanDrag="True"
+                  ZoomSnapPointsType="None"
+                  VerticalScrollMode="Enabled"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollMode="Enabled"
+                  HorizontalScrollBarVisibility="Auto"
+                  x:Name="ScrollViewer">
       <Image Source="Images/Docks.jpg" />
     </ScrollViewer>
   </Grid>

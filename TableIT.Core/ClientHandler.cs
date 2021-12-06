@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TableIT.Core
 {
-    public class ClientHandler
+    public class ClientHandler : IAsyncDisposable
     {
         private readonly HubConnection _connection;
 
@@ -17,12 +17,12 @@ namespace TableIT.Core
             _connection = new HubConnectionBuilder()
                 .WithUrl(url, option =>
                 {
-                    //option.AccessTokenProvider = () =>
-                    //{
-                    //    return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
-                    //};
+                    option.AccessTokenProvider = () =>
+                    {
+                        return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
+                    };
                 }).Build();
-            
+
             _connection.On<string, string>("SendMessage",
                 (string server, string message) =>
                 {
@@ -43,6 +43,11 @@ namespace TableIT.Core
         private string GetClientUrl(string endpoint, string hubName)
         {
             return $"{endpoint}/client/?hub={hubName}";
+        }
+
+        ValueTask IAsyncDisposable.DisposeAsync()
+        {
+            return _connection.DisposeAsync();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace TableIT.Core
             (Endpoint, AccessKey) = ParseConnectionString(connectionString);
         }
 
-        public string GenerateAccessToken(string audience, string userId, TimeSpan? lifetime = null)
+        public static string GenerateAccessToken(string accessKey, string audience, string userId, TimeSpan? lifetime = null)
         {
             IEnumerable<Claim> claims = null;
             if (userId != null)
@@ -32,14 +32,17 @@ namespace TableIT.Core
                 };
             }
 
-            return GenerateAccessTokenInternal(audience, claims, lifetime ?? TimeSpan.FromHours(1));
+            return GenerateAccessTokenInternal(accessKey, audience, claims, lifetime ?? TimeSpan.FromHours(1));
         }
 
-        public string GenerateAccessTokenInternal(string audience, IEnumerable<Claim> claims, TimeSpan lifetime)
+        public string GenerateAccessToken(string audience, string userId, TimeSpan? lifetime = null)
+            => GenerateAccessToken(AccessKey, audience, userId, lifetime ?? TimeSpan.FromHours(1));
+
+        private static string GenerateAccessTokenInternal(string accessKey, string audience, IEnumerable<Claim> claims, TimeSpan lifetime)
         {
             var expire = DateTime.UtcNow.Add(lifetime);
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AccessKey));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var token = JwtTokenHandler.CreateJwtSecurityToken(
