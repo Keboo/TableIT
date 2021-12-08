@@ -37,7 +37,7 @@ namespace TableIT.Core
 
         private string GetClientUrl(string endpoint, string hubName)
         {
-            return $"{endpoint}/client/?hub={hubName}";
+            return $"{endpoint}/{hubName}";
         }
 
         ValueTask IAsyncDisposable.DisposeAsync()
