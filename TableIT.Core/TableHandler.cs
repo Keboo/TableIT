@@ -8,36 +8,31 @@ namespace TableIT.Core
     {
         private readonly HubConnection _connection;
 
-        public TableHandler(string endpoint, string accessKey, string hubName, string userId)
+        public TableHandler(string endpoint, string userId)
         {
-            var url = GetClientUrl(endpoint, hubName);
+            var url = $"{endpoint}?user={userId}";
 
             _connection = new HubConnectionBuilder()
-                .WithUrl(url, option =>
+                .WithUrl(url, options =>
                 {
-                    option.AccessTokenProvider = () =>
-                    {
-                        return Task.FromResult(ServiceUtils.GenerateAccessToken(accessKey, url, userId));
-                    };
-                }).Build();
+                    options.SkipNegotiation = false;
+                })
+                .WithAutomaticReconnect()
+                .Build();
         }
 
         public void Register<TMessage>(Action<TMessage> handler)
         {
-            _connection.On<string>(typeof(TMessage).Name.ToLowerInvariant(), data =>
+            _connection.On<TMessage>(typeof(TMessage).Name.ToLowerInvariant(), data =>
             {
-                handler(System.Text.Json.JsonSerializer.Deserialize<TMessage>(data));
+                //handler(System.Text.Json.JsonSerializer.Deserialize<TMessage>(data));
+                handler(data);
             });
         }
 
         public async Task StartAsync()
         {
             await _connection.StartAsync();
-        }
-
-        private string GetClientUrl(string endpoint, string hubName)
-        {
-            return $"{endpoint}/{hubName}";
         }
 
         ValueTask IAsyncDisposable.DisposeAsync()

@@ -30,10 +30,10 @@ namespace TableIT
                 try
                 {
                     _client = new TableHandler(
-                        "https://tableit.service.signalr.net",
-                        "ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=",
-                        "TestHub",
+                        //"https://tableit.service.signalr.net",
+                        "https://tableit.azurewebsites.net/message",
                         "test-user");
+
                     _client.Register<PanMessage>(async message =>
                     {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,

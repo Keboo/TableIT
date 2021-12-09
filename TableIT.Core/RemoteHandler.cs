@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Azure.SignalR.Management;
+using Microsoft.Extensions.Logging;
+//using Microsoft.Azure.SignalR.Management;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,61 +14,121 @@ namespace TableIT.Core
     public class RemoteHandler
     {
         private static readonly HttpClient Client = new();
-        private readonly HubConnection _connection;
+        private HubConnection? _connection;
 
         private readonly string _serverName;
         private readonly string _hubName;
         private readonly string _endpoint;
         private readonly string _accessKey;
+        //private readonly ServiceManager _serviceManager;
+        //private ServiceHubContext _hubContext;
 
         public RemoteHandler(string endpoint, string accessKey, string hubName)
         {
-
-
             _serverName = GenerateServerName();
             _hubName = hubName;
             _endpoint = endpoint;
             _accessKey = accessKey;
 
-            var serviceManager = new ServiceManagerBuilder().WithOptions(option =>
-            {
-                option.ConnectionString = _connectionString;
-                option.ServiceTransportType = _serviceTransportType;
-            })
+            //_serviceManager = new ServiceManagerBuilder()
+            //    .WithOptions(option =>
+            //{
+            //    option.ConnectionString = "https://tableit.azurewebsites.net/message";
+            //    option.ServiceTransportType = ServiceTransportType.Transient;
+            //})
             //Uncomment the following line to get more logs
             //.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
-            .BuildServiceManager();
+            //.BuildServiceManager();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
+
+
+            //_hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
 
             var url = $"{endpoint}/{hubName}";
 
-            _connection = new HubConnectionBuilder()
-                .WithUrl(url, option =>
-                {
-                    option.AccessTokenProvider = () =>
-                    {
-                        return Task.FromResult(ServiceUtils.GenerateAccessToken(accessKey, url, "test-user"));
-                    };
-                }).Build();
+            
+        }
+
+        private async Task<HubConnection?> Connect()
+        {
+            if (_connection is { } connection) return connection;
+
+            connection = new HubConnectionBuilder()
+                            .WithUrl("https://tableit.azurewebsites.net/message?user=test-user", option =>
+                            {
+                                option.SkipNegotiation = false;
+                            })
+                            .ConfigureLogging(builder => builder.AddConsole())
+                            .Build();
+            await connection.StartAsync();
+            if (connection.State == HubConnectionState.Connected)
+            {
+                return _connection = connection;
+            }
+            //var response = await Client.PostAsync("https://tableit.azurewebsites.net/message/negotiate?user=test-user", new StringContent(""));
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    string json = await response.Content.ReadAsStringAsync();
+            //    var values = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+
+            //    if (values?.TryGetValue("url", out string url) == true &&
+            //        values.TryGetValue("accessToken", out string accessToken))
+            //    {
+            //        connection = new HubConnectionBuilder()
+            //                .WithUrl(url, option =>
+            //                {
+            //                    option.AccessTokenProvider = () =>
+            //                    {
+            //                        return Task.FromResult(accessToken)!;
+            //                    };
+            //                    option.DefaultTransferFormat = Microsoft.AspNetCore.Connections.TransferFormat.Text;
+            //                    option.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.ServerSentEvents;
+            //                })
+            //                .ConfigureLogging(builder => builder.AddConsole())
+            //                .Build();
+            //        await connection.StartAsync();
+            //        if (connection.State == HubConnectionState.Connected)
+            //        {
+            //            return _connection = connection;
+            //        }
+            //    }
+            //}
+
+            return null;
         }
 
         public async Task SendRequest<TMessage>(TMessage message)
         {
-            if (_connection.State != HubConnectionState.Connected)
+
+
+            //_hubContext ??= await _serviceManager.CreateHubContextAsync("TestHub", default);
+
+
+            //if (_connection.State != HubConnectionState.Connected)
+            //{
+            //    await _connection.StartAsync();
+            //}
+            //if (_connection.State != HubConnectionState.Connected)
+            //{
+            //    return;
+            //}
+
+            var connection = await Connect();
+            if (connection is not null)
             {
-                await _connection.StartAsync();
+                string method = typeof(TMessage).Name.ToLowerInvariant();
+
+                string argument = System.Text.Json.JsonSerializer.Serialize(message);
+                //await _hubContext.Clients.All.SendCoreAsync(method, new object[] { argument });
+                try
+                {
+                    await connection.SendAsync(method, message);
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
-            if (_connection.State != HubConnectionState.Connected)
-            {
-                return;
-            }
-
-            string method = typeof(TMessage).Name.ToLowerInvariant();
-
-            string argument = System.Text.Json.JsonSerializer.Serialize(message);
-            await _connection.InvokeAsync(method, message);
-
             //string content = System.Text.Json.JsonSerializer.Serialize(new PayloadMessage
             //{
             //    Target = typeof(TMessage).Name.ToLowerInvariant(),

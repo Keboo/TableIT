@@ -9,8 +9,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSignalR();
-builder.Services.AddSingleton<BroadcastHub>();
+
+builder.Services.AddSingleton<SignalRService>();
+builder.Services.AddHostedService(sp => sp.GetService<SignalRService>());
+builder.Services.AddSingleton<IHubContextStore>(sp => sp.GetService<SignalRService>());
 
 //builder.Services.AddHostedService<PostService>();
 
@@ -33,10 +35,10 @@ app.UseRouting();
 
 
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapHub<BroadcastHub>("/signalr");
-});
+//app.UseEndpoints(endpoints =>
+//{
+//    endpoints.MapHub<BroadcastHub>("/signalr");
+//});
 
 
 app.Run();
