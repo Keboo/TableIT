@@ -1,8 +1,6 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
-using System;
 using TableIT.Core;
-using TableIT.Core.Messages;
 
 namespace TableIT.Remote.ViewModels
 {
@@ -18,9 +16,8 @@ namespace TableIT.Remote.ViewModels
             ZoomCommand = new RelayCommand<string>(OnZoom);
 
             RemoteHandler = new RemoteHandler(
-                "https://tableit.service.signalr.net",
-                "ilNpv1VeUS5Rn933eEBbgYsQ185epBKDj39/hFdnUfs=",
-                "TestHub");
+                "https://tableit.azurewebsites.net/message",
+                "TestHub", "test-user");
         }
 
         private async void OnZoom(string zoomAdjustment)

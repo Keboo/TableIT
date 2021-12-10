@@ -15,7 +15,6 @@ namespace TableIT.Core
             _connection = new HubConnectionBuilder()
                 .WithUrl(url, options =>
                 {
-                    options.SkipNegotiation = false;
                 })
                 .WithAutomaticReconnect()
                 .Build();

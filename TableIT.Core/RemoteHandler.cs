@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
-//using Microsoft.Azure.SignalR.Management;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -14,141 +11,59 @@ namespace TableIT.Core
     public class RemoteHandler
     {
         private static readonly HttpClient Client = new();
-        private HubConnection? _connection;
 
-        private readonly string _serverName;
         private readonly string _hubName;
+        private readonly string _userId;
         private readonly string _endpoint;
-        private readonly string _accessKey;
-        //private readonly ServiceManager _serviceManager;
-        //private ServiceHubContext _hubContext;
 
-        public RemoteHandler(string endpoint, string accessKey, string hubName)
+        public RemoteHandler(string endpoint, string hubName, string userId)
         {
-            _serverName = GenerateServerName();
             _hubName = hubName;
+            _userId = userId;
             _endpoint = endpoint;
-            _accessKey = accessKey;
-
-            //_serviceManager = new ServiceManagerBuilder()
-            //    .WithOptions(option =>
-            //{
-            //    option.ConnectionString = "https://tableit.azurewebsites.net/message";
-            //    option.ServiceTransportType = ServiceTransportType.Transient;
-            //})
-            //Uncomment the following line to get more logs
-            //.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
-            //.BuildServiceManager();
-
-
-
-            //_hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
-
-            var url = $"{endpoint}/{hubName}";
-
-            
         }
 
-        private async Task<HubConnection?> Connect()
+        private async Task<(string Url, string AccessKey)> GetSignalRConnection(string userId)
         {
-            if (_connection is { } connection) return connection;
-
-            connection = new HubConnectionBuilder()
-                            .WithUrl("https://tableit.azurewebsites.net/message?user=test-user", option =>
-                            {
-                                option.SkipNegotiation = false;
-                            })
-                            .ConfigureLogging(builder => builder.AddConsole())
-                            .Build();
-            await connection.StartAsync();
-            if (connection.State == HubConnectionState.Connected)
+            var response = await Client.PostAsync(_endpoint + $"/negotiate?user={userId}", new StringContent(""));
+            if (response.IsSuccessStatusCode)
             {
-                return _connection = connection;
+                string json = await response.Content.ReadAsStringAsync();
+                var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                if (data?.TryGetValue("url", out string url) == true &&
+                    data.TryGetValue("accessToken", out string accessKey))
+                {
+                    return (url, accessKey);
+                }
             }
-            //var response = await Client.PostAsync("https://tableit.azurewebsites.net/message/negotiate?user=test-user", new StringContent(""));
-            //if (response.IsSuccessStatusCode)
-            //{
-            //    string json = await response.Content.ReadAsStringAsync();
-            //    var values = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-
-            //    if (values?.TryGetValue("url", out string url) == true &&
-            //        values.TryGetValue("accessToken", out string accessToken))
-            //    {
-            //        connection = new HubConnectionBuilder()
-            //                .WithUrl(url, option =>
-            //                {
-            //                    option.AccessTokenProvider = () =>
-            //                    {
-            //                        return Task.FromResult(accessToken)!;
-            //                    };
-            //                    option.DefaultTransferFormat = Microsoft.AspNetCore.Connections.TransferFormat.Text;
-            //                    option.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.ServerSentEvents;
-            //                })
-            //                .ConfigureLogging(builder => builder.AddConsole())
-            //                .Build();
-            //        await connection.StartAsync();
-            //        if (connection.State == HubConnectionState.Connected)
-            //        {
-            //            return _connection = connection;
-            //        }
-            //    }
-            //}
-
-            return null;
+            return ("", "");
         }
 
         public async Task SendRequest<TMessage>(TMessage message)
         {
-
-
-            //_hubContext ??= await _serviceManager.CreateHubContextAsync("TestHub", default);
-
-
-            //if (_connection.State != HubConnectionState.Connected)
-            //{
-            //    await _connection.StartAsync();
-            //}
-            //if (_connection.State != HubConnectionState.Connected)
-            //{
-            //    return;
-            //}
-
-            var connection = await Connect();
-            if (connection is not null)
+            string content = System.Text.Json.JsonSerializer.Serialize(new PayloadMessage
             {
-                string method = typeof(TMessage).Name.ToLowerInvariant();
-
-                string argument = System.Text.Json.JsonSerializer.Serialize(message);
-                //await _hubContext.Clients.All.SendCoreAsync(method, new object[] { argument });
-                try
+                Target = typeof(TMessage).Name.ToLowerInvariant(),
+                Arguments = new[]
                 {
-                    await connection.SendAsync(method, message);
+                    System.Text.Json.JsonSerializer.Serialize(message)
                 }
-                catch (Exception ex)
-                {
-
-                }
-            }
-            //string content = System.Text.Json.JsonSerializer.Serialize(new PayloadMessage
-            //{
-            //    Target = typeof(TMessage).Name.ToLowerInvariant(),
-            //    Arguments = new[]
-            //    {
-            //        System.Text.Json.JsonSerializer.Serialize(message)
-            //    }
-            //});
-            //await SendRequest(content, _hubName);
+            });
+            await SendRequest(content, _hubName, _userId);
         }
 
-        private async Task SendRequest(string content, string hubName)
+        private async Task SendRequest(string content, string hubName, string userId)
         {
             try
             {
-                string url = GetBroadcastUrl(hubName);
+                var (endpoint, accessKey) = await GetSignalRConnection(userId);
+
+                //string url = GetBroadcastUrl(hubName);
+                string url = GetSendToUserUrl(endpoint, hubName, userId);
 
                 if (!string.IsNullOrEmpty(url))
                 {
-                    var request = BuildRequest(url, _accessKey, content);
+                    var request = BuildRequest(url, accessKey, content);
 
                     // ResponseHeadersRead instructs SendAsync to return once headers are read
                     // rather than buffer the entire response. This gives a small perf boost.
@@ -173,35 +88,33 @@ namespace TableIT.Core
             return new UriBuilder(baseUrl).Uri;
         }
 
-        //private string GetSendToUserUrl(string hubName, string userId)
-        //{
-        //    return $"{GetBaseUrl(hubName)}/users/{userId}";
-        //}
+        private string GetSendToUserUrl(string endpoint, string hubName, string userId)
+        {
+            return $"{GetBaseUrl(endpoint, hubName)}/users/{userId}";
+        }
 
         //private string GetSendToGroupUrl(string hubName, string group)
         //{
         //    return $"{GetBaseUrl(hubName)}/groups/{group}";
         //}
 
-        private string GetBroadcastUrl(string hubName)
+        //private string GetBroadcastUrl(string hubName)
+        //{
+        //    return $"{GetBaseUrl(hubName)}";
+        //}
+
+        private static string GetBaseUrl(string endpoint, string hubName)
         {
-            return $"{GetBaseUrl(hubName)}";
+            return $"{endpoint}/api/v1/hubs/{hubName.ToLower()}";
         }
 
-        private string GetBaseUrl(string hubName)
-        {
-            return $"{_endpoint}/api/v1/hubs/{hubName.ToLower()}";
-        }
 
-        private static string GenerateServerName()
-            => $"{Environment.MachineName}_{Guid.NewGuid():N}";
-
-        private HttpRequestMessage BuildRequest(string url, string accessKey, string content)
+        private HttpRequestMessage BuildRequest(string url, string accessToken, string content)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(url));
 
             request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", ServiceUtils.GenerateAccessToken(accessKey, url, _serverName));
+                new AuthenticationHeaderValue("Bearer", accessToken);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Content = new StringContent(content, Encoding.UTF8, "application/json");
 

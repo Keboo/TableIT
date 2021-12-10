@@ -23,7 +23,7 @@ namespace TableIT.Core
 
         public static string GenerateAccessToken(string accessKey, string audience, string userId, TimeSpan? lifetime = null)
         {
-            IEnumerable<Claim> claims = null;
+            IEnumerable<Claim>? claims = null;
             if (userId != null)
             {
                 claims = new[]
@@ -38,7 +38,7 @@ namespace TableIT.Core
         public string GenerateAccessToken(string audience, string userId, TimeSpan? lifetime = null)
             => GenerateAccessToken(AccessKey, audience, userId, lifetime ?? TimeSpan.FromHours(1));
 
-        private static string GenerateAccessTokenInternal(string accessKey, string audience, IEnumerable<Claim> claims, TimeSpan lifetime)
+        private static string GenerateAccessTokenInternal(string accessKey, string audience, IEnumerable<Claim>? claims, TimeSpan lifetime)
         {
             var expire = DateTime.UtcNow.Add(lifetime);
 
