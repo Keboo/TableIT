@@ -23,7 +23,7 @@ namespace TableIT.Core
             _endpoint = endpoint;
         }
 
-        private async Task<(string Url, string AccessKey)> GetSignalRConnection(string userId)
+        private async Task<SignalRServer> GetSignalRConnection(string userId)
         {
             var response = await Client.PostAsync(_endpoint + $"/negotiate?user={userId}", new StringContent(""));
             if (response.IsSuccessStatusCode)
@@ -33,7 +33,7 @@ namespace TableIT.Core
                 if (data?.TryGetValue("url", out string url) == true &&
                     data.TryGetValue("accessToken", out string accessKey))
                 {
-                    return (url, accessKey);
+                    
                 }
             }
             return ("", "");
@@ -119,6 +119,20 @@ namespace TableIT.Core
             request.Content = new StringContent(content, Encoding.UTF8, "application/json");
 
             return request;
+        }
+
+        private class SignalRServer
+        {
+            public string Endpoint { get; }
+            public string HubName { get; }
+            public string AccessToken { get; }
+
+            public SignalRServer(string endpoint, string hubName, string accessToken)
+            {
+                Endpoint = endpoint;
+                HubName = hubName;
+                AccessToken = accessToken;
+            }
         }
     }
 }
