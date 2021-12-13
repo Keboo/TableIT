@@ -65,7 +65,7 @@ namespace TableIT.Core
 
         public async Task SendRequest(string command, string hubName, string arg = null)
         {
-            string url = null;
+            string? url = null;
             switch (command)
             {
                 case "user":
@@ -84,7 +84,7 @@ namespace TableIT.Core
 
             if (!string.IsNullOrEmpty(url))
             {
-                var request = BuildRequest(url);
+                var request = BuildRequest(url!);
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.

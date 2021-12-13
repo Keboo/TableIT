@@ -18,7 +18,6 @@ public class NegotiateController : ControllerBase
     public NegotiateController(IHubContextStore store, IConfiguration configuration)
     {
         _messageHubContext = store.MessageHubContext;
-        _chatHubContext = store.ChatHubContext;
         _enableDetailedErrors = configuration.GetValue(EnableDetailedErrors, false);
     }
 
@@ -29,11 +28,11 @@ public class NegotiateController : ControllerBase
     }
 
     //This API is not used. Just demonstrate a way to have multiple hubs.
-    [HttpPost("chat/negotiate")]
-    public Task<ActionResult> ChatHubNegotiate(string user)
-    {
-        return NegotiateBase(user, _chatHubContext);
-    }
+    //[HttpPost("chat/negotiate")]
+    //public Task<ActionResult> ChatHubNegotiate(string user)
+    //{
+    //    return NegotiateBase(user, _chatHubContext);
+    //}
 
     private async Task<ActionResult> NegotiateBase(string user, ServiceHubContext serviceHubContext)
     {
@@ -45,9 +44,9 @@ public class NegotiateController : ControllerBase
         NegotiationResponse? negotiateResponse = await serviceHubContext.NegotiateAsync(new()
         {
             UserId = user,
-            EnableDetailedErrors = _enableDetailedErrors
+            EnableDetailedErrors = true
         });
-        await serviceHubContext.UserGroups.AddToGroupAsync(user, "test-group");
+        //await serviceHubContext.UserGroups.AddToGroupAsync(user, "test-group");
 
         return new JsonResult(new Dictionary<string, string>()
             {

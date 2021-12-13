@@ -8,7 +8,7 @@
       <ShellContent ContentTemplate="{DataTemplate views:ControlPage}" />
     </Tab>
   </FlyoutItem>
-  <FlyoutItem Title="Maps">
+  <!--<FlyoutItem Title="Maps">
     <Tab>
       <ShellContent ContentTemplate="{DataTemplate views:MapsPage}" />
     </Tab>
@@ -17,5 +17,5 @@
     <Tab>
       <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
     </Tab>
-  </FlyoutItem>
+  </FlyoutItem>-->
 </Shell>

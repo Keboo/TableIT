@@ -1,6 +1,4 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
-using System;
 using TableIT.Remote.ViewModels;
 
 namespace TableIT.Remote.Views

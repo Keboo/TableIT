@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace TableIT.Core
 {
@@ -12,18 +14,16 @@ namespace TableIT.Core
     {
         private static readonly HttpClient Client = new();
 
-        private readonly string _hubName;
         private readonly string _userId;
         private readonly string _endpoint;
 
-        public RemoteHandler(string endpoint, string hubName, string userId)
+        public RemoteHandler(string endpoint, string userId)
         {
-            _hubName = hubName;
             _userId = userId;
             _endpoint = endpoint;
         }
 
-        private async Task<SignalRServer> GetSignalRConnection(string userId)
+        private async Task<SignalRServer?> GetSignalRConnection(string userId)
         {
             var response = await Client.PostAsync(_endpoint + $"/negotiate?user={userId}", new StringContent(""));
             if (response.IsSuccessStatusCode)
@@ -31,12 +31,15 @@ namespace TableIT.Core
                 string json = await response.Content.ReadAsStringAsync();
                 var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
                 if (data?.TryGetValue("url", out string url) == true &&
-                    data.TryGetValue("accessToken", out string accessKey))
+                    Uri.TryCreate(url, UriKind.Absolute, out Uri uri) &&
+                    HttpUtility.ParseQueryString(uri.Query) is { } query &&
+                    query.Get("hub") is { } hubName &&
+                    data.TryGetValue("accessToken", out string accessToken))
                 {
-                    
+                    return new SignalRServer($"{uri.Scheme}://{uri.Host}", hubName, accessToken);
                 }
             }
-            return ("", "");
+            return null;
         }
 
         public async Task SendRequest<TMessage>(TMessage message)
@@ -49,32 +52,31 @@ namespace TableIT.Core
                     System.Text.Json.JsonSerializer.Serialize(message)
                 }
             });
-            await SendRequest(content, _hubName, _userId);
+            await SendRequest(content, _userId);
         }
 
-        private async Task SendRequest(string content, string hubName, string userId)
+        private async Task SendRequest(string content, string userId)
         {
             try
             {
-                var (endpoint, accessKey) = await GetSignalRConnection(userId);
+                SignalRServer? server = await GetSignalRConnection(userId);
 
-                //string url = GetBroadcastUrl(hubName);
-                string url = GetSendToUserUrl(endpoint, hubName, userId);
+                if (server is null) return;
 
-                if (!string.IsNullOrEmpty(url))
+                string url = server.GetBroadcastUrl();
+                //string url = server.GetSendToUserUrl(userId);
+
+                var request = BuildRequest(url, server.AccessToken, content);
+
+                // ResponseHeadersRead instructs SendAsync to return once headers are read
+                // rather than buffer the entire response. This gives a small perf boost.
+                // Note that it is important to dispose of the response when doing this to
+                // avoid leaving the connection open.
+                using var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                if (response.StatusCode != HttpStatusCode.Accepted)
                 {
-                    var request = BuildRequest(url, accessKey, content);
-
-                    // ResponseHeadersRead instructs SendAsync to return once headers are read
-                    // rather than buffer the entire response. This gives a small perf boost.
-                    // Note that it is important to dispose of the response when doing this to
-                    // avoid leaving the connection open.
-                    using var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                    if (response.StatusCode != HttpStatusCode.Accepted)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"Sent error: {response.StatusCode}");
-                    }
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
@@ -83,35 +85,9 @@ namespace TableIT.Core
             }
         }
 
-        private Uri GetUrl(string baseUrl)
+        private static HttpRequestMessage BuildRequest(string url, string accessToken, string content)
         {
-            return new UriBuilder(baseUrl).Uri;
-        }
-
-        private string GetSendToUserUrl(string endpoint, string hubName, string userId)
-        {
-            return $"{GetBaseUrl(endpoint, hubName)}/users/{userId}";
-        }
-
-        //private string GetSendToGroupUrl(string hubName, string group)
-        //{
-        //    return $"{GetBaseUrl(hubName)}/groups/{group}";
-        //}
-
-        //private string GetBroadcastUrl(string hubName)
-        //{
-        //    return $"{GetBaseUrl(hubName)}";
-        //}
-
-        private static string GetBaseUrl(string endpoint, string hubName)
-        {
-            return $"{endpoint}/api/v1/hubs/{hubName.ToLower()}";
-        }
-
-
-        private HttpRequestMessage BuildRequest(string url, string accessToken, string content)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(url));
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
 
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", accessToken);
@@ -132,6 +108,26 @@ namespace TableIT.Core
                 Endpoint = endpoint;
                 HubName = hubName;
                 AccessToken = accessToken;
+            }
+
+            public string GetSendToUserUrl(string userId)
+            {
+                return $"{GetBaseUrl(Endpoint, HubName)}/users/{userId}";
+            }
+
+            //private string GetSendToGroupUrl(string hubName, string group)
+            //{
+            //    return $"{GetBaseUrl(hubName)}/groups/{group}";
+            //}
+
+            public string GetBroadcastUrl()
+            {
+                return $"{GetBaseUrl(Endpoint, HubName)}";
+            }
+
+            private static string GetBaseUrl(string endpoint, string hubName)
+            {
+                return $"{endpoint}/api/v1/hubs/{hubName}";
             }
         }
     }

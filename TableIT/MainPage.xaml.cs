@@ -31,7 +31,8 @@ namespace TableIT
                 {
                     _client = new TableHandler(
                         //"https://tableit.service.signalr.net",
-                        "https://tableit.azurewebsites.net/message",
+                        //"https://tableit.azurewebsites.net/message",
+                        "https://tableitfunctions.azurewebsites.net/api",
                         "test-user");
 
                     _client.Register<PanMessage>(async message =>

@@ -21,5 +21,13 @@ namespace TableIT.Core
                 ZoomAdjustment = zoomAdjustment
             });
         }
+
+        public static async Task SendZoom(this TableHandler handler, float zoomAdjustment)
+        {
+            await handler.SendAsync(new ZoomMessage
+            {
+                ZoomAdjustment = zoomAdjustment
+            });
+        }
     }
 }
