@@ -23,10 +23,10 @@ namespace TableIT.Core
 
         public void Register<TMessage>(Action<TMessage> handler)
         {
-            _connection.On<TMessage>(typeof(TMessage).Name.ToLowerInvariant(), data =>
+            _connection.On<string>(typeof(TMessage).Name.ToLowerInvariant(), data =>
             {
-                //handler(System.Text.Json.JsonSerializer.Deserialize<TMessage>(data));
-                handler(data);
+                handler(System.Text.Json.JsonSerializer.Deserialize<TMessage>(data));
+                //handler(data);
             });
         }
 
