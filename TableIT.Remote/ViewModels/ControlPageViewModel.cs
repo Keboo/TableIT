@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ namespace TableIT.Remote.ViewModels
 {
     public class ControlPageViewModel : ObservableObject
     {
-        private RemoteHandler RemoteHandler { get; }
         private TableHandler Client { get; }
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
@@ -18,10 +16,6 @@ namespace TableIT.Remote.ViewModels
         {
             PanCommand = new RelayCommand<PanDirection>(OnPan);
             ZoomCommand = new RelayCommand<string>(OnZoom);
-
-            RemoteHandler = new RemoteHandler(
-                "https://tableitfunctions.azurewebsites.net/api",
-                "test-user");
 
             Client = new TableHandler("https://tableitfunctions.azurewebsites.net/api",
                         "test-user");
@@ -38,7 +32,6 @@ namespace TableIT.Remote.ViewModels
 
         private async void OnZoom(string zoomAdjustment)
         {
-            await Client.Test();
             await Client.SendZoom(float.Parse(zoomAdjustment));
         }
 
@@ -47,16 +40,16 @@ namespace TableIT.Remote.ViewModels
             switch(direction)
             {
                 case PanDirection.Left:
-                    await RemoteHandler.SendPan(-20, null);
+                    await Client.SendPan(-20, null);
                     break;
                 case PanDirection.Right:
-                    await RemoteHandler.SendPan(20, null);
+                    await Client.SendPan(20, null);
                     break;
                 case PanDirection.Up:
-                    await RemoteHandler.SendPan(null, -20);
+                    await Client.SendPan(null, -20);
                     break;
                 case PanDirection.Down:
-                    await RemoteHandler.SendPan(null, 20);
+                    await Client.SendPan(null, 20);
                     break;
             }
         }
