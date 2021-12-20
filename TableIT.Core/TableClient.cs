@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 
 namespace TableIT.Core
 {
-    public class TableHandler : IAsyncDisposable
+    public class TableClient : IAsyncDisposable
     {
         private readonly HubConnection _connection;
 
-        public TableHandler(string endpoint, string userId)
+        public TableClient(string endpoint)
         {
-            //var url = $"{endpoint}?user={userId}";
             var url = endpoint;
             _connection = new HubConnectionBuilder()
                 .WithUrl(url, options =>
@@ -26,13 +25,7 @@ namespace TableIT.Core
             _connection.On<string>(typeof(TMessage).Name.ToLowerInvariant(), data =>
             {
                 handler(System.Text.Json.JsonSerializer.Deserialize<TMessage>(data));
-                //handler(data);
             });
-        }
-
-        public async Task Test()
-        {
-            await _connection.SendAsync("SignalRTest", "test message");
         }
 
         public async Task SendAsync<TMessage>(TMessage message)

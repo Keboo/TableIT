@@ -8,7 +8,7 @@ namespace TableIT.Remote.ViewModels
 {
     public class ControlPageViewModel : ObservableObject
     {
-        private TableHandler Client { get; }
+        private TableClient Client { get; }
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
 
@@ -17,8 +17,7 @@ namespace TableIT.Remote.ViewModels
             PanCommand = new RelayCommand<PanDirection>(OnPan);
             ZoomCommand = new RelayCommand<string>(OnZoom);
 
-            Client = new TableHandler("https://tableitfunctions.azurewebsites.net/api",
-                        "test-user");
+            Client = new TableClient("https://tableitfunctions.azurewebsites.net/api");
             Task.Run(async () =>
             {
                 try
