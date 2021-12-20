@@ -26,7 +26,7 @@ namespace TableIT
                             });
                 try
                 {
-                    _client = new TableClient("https://tableitfunctions.azurewebsites.net/api");
+                    _client = new TableClient("https://tableitfunctions.azurewebsites.net/api", "TABLE");
 
                     _client.Register<PanMessage>(async message =>
                     {

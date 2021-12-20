@@ -8,13 +8,15 @@ namespace TableIT.Core
     {
         private readonly HubConnection _connection;
 
-        public TableClient(string endpoint)
+        public TableClient(string endpoint, string? userId = null)
         {
-            var url = endpoint;
             _connection = new HubConnectionBuilder()
-                .WithUrl(url, options =>
+                .WithUrl(endpoint, options =>
                 {
-                    
+                    if (!string.IsNullOrWhiteSpace(userId))
+                    {
+                        options.Headers["Authorization"] = ServiceUtils.GenerateAccessToken(userId!);
+                    }
                 })
                 .WithAutomaticReconnect()
                 .Build();

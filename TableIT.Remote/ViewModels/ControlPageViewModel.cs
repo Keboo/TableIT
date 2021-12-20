@@ -17,7 +17,7 @@ namespace TableIT.Remote.ViewModels
             PanCommand = new RelayCommand<PanDirection>(OnPan);
             ZoomCommand = new RelayCommand<string>(OnZoom);
 
-            Client = new TableClient("https://tableitfunctions.azurewebsites.net/api");
+            Client = new TableClient("https://tableitfunctions.azurewebsites.net/api", "TABLE");
             Task.Run(async () =>
             {
                 try
