@@ -4,24 +4,26 @@
              xmlns:local="clr-namespace:TableIT.Remote"
              x:Class="TableIT.Remote.App"
              windows:Application.ImageDirectory="Assets">
-    <Application.Resources>
-        <ResourceDictionary>
+  <Application.Resources>
+    <ResourceDictionary>
 
-            <Color x:Key="PrimaryColor">#512bdf</Color>
-            <Color x:Key="SecondaryColor">White</Color>
+      <Color x:Key="PrimaryColor">#2DB9FF</Color>
+      <Color x:Key="SecondaryColor">#FFC938</Color>
+      <Color x:Key="Background">#202020</Color>
+      <Color x:Key="Foreground">#DDDDDD</Color>
 
-            <Style TargetType="Label">
-                <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-            </Style>
+      <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+      </Style>
 
-            <Style TargetType="Button">
-                <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                <Setter Property="Padding" Value="14,10" />
-            </Style>
+      <Style TargetType="Button">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+        <Setter Property="Padding" Value="14,10" />
+      </Style>
 
-        </ResourceDictionary>
-    </Application.Resources>
+    </ResourceDictionary>
+  </Application.Resources>
 </Application>

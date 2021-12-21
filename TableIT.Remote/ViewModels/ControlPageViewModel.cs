@@ -12,6 +12,13 @@ namespace TableIT.Remote.ViewModels
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
 
+        private string _status;
+        public string Status
+        {
+            get => _status;
+            set => SetProperty(ref _status, value);
+        }
+
         public ControlPageViewModel()
         {
             PanCommand = new RelayCommand<PanDirection>(OnPan);
@@ -22,10 +29,14 @@ namespace TableIT.Remote.ViewModels
             {
                 try
                 {
+                    Status = "Connecting...";
                     await Client.StartAsync();
+                    Status = "Connected";
                 }
                 catch (Exception e)
-                { }
+                {
+                    Status = $"Error: {e.Message}";
+                }
             });
         }
 

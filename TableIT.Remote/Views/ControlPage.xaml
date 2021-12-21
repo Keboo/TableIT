@@ -3,10 +3,17 @@
              xmlns:vm="clr-namespace:TableIT.Remote.ViewModels"
              x:Class="TableIT.Remote.Views.ControlPage"
              x:DataType="vm:ControlPageViewModel"
-             BackgroundColor="{DynamicResource SecondaryColor}">
+             BackgroundColor="{DynamicResource Background}">
 
   <Grid>
-    <Grid HorizontalOptions="Center" VerticalOptions="Center" >
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition />
+    </Grid.RowDefinitions>
+
+    <Label Text="{Binding Status}" />
+
+    <Grid HorizontalOptions="Center" VerticalOptions="Center" GridLayout.Row="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="80" />
         <RowDefinition Height="80" />
@@ -27,39 +34,39 @@
       <Button x:Name="UpButton"
               Command="{Binding PanCommand}"
               CommandParameter="{x:Static vm:PanDirection.Up}"
-              ImageSource="arrow.svg" 
+              ImageSource="arrow_up.svg" 
               GridLayout.Column="1"
               GridLayout.Row="0" />
       <Button x:Name="RightButton"
               Command="{Binding PanCommand}"
               CommandParameter="{x:Static vm:PanDirection.Right}"
-              ImageSource="arrow.svg"
+              ImageSource="arrow_right.svg"
               GridLayout.Column="2"
-              GridLayout.Row="1"
-              Rotation="90" />
+              GridLayout.Row="1"/>
       <Button x:Name="DownButton"
               Command="{Binding PanCommand}"
               CommandParameter="{x:Static vm:PanDirection.Down}"
-              ImageSource="arrow.svg"
+              ImageSource="arrow_down.svg"
               GridLayout.Column="1"
-              GridLayout.Row="2"
-              Rotation="180" />
+              GridLayout.Row="2"/>
       <Button x:Name="LeftButton"
               Command="{Binding PanCommand}"
               CommandParameter="{x:Static vm:PanDirection.Left}"
-              ImageSource="arrow.svg"
+              ImageSource="arrow_right.svg"
               GridLayout.Column="0"
-              GridLayout.Row="1"
-              Rotation="270" />
+              GridLayout.Row="1"/>
 
       <Button Command="{Binding ZoomCommand}"
               CommandParameter="-0.1"
-              ImageSource="magify_minus.svg"
+              ImageSource="magnify_minus.svg"
               GridLayout.Column="0"
+              GridLayout.Row="4" />
+      <Button x:Name="Reset"
+              GridLayout.Column="1"
               GridLayout.Row="4" />
       <Button Command="{Binding ZoomCommand}"
               CommandParameter="0.1"
-              ImageSource="magify_plus.svg"
+              ImageSource="magnify_plus.svg"
               GridLayout.Column="2"
               GridLayout.Row="4"/>
 
