@@ -12,11 +12,18 @@ namespace TableIT.Remote.ViewModels
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
 
-        private string _status;
-        public string Status
+        private string? _status;
+        public string? Status
         {
             get => _status;
             set => SetProperty(ref _status, value);
+        }
+
+        private string? _targetUserId;
+        public string? TargetUserId
+        {
+            get => _targetUserId;
+            set => SetProperty(ref _targetUserId, value);
         }
 
         public ControlPageViewModel()
@@ -24,7 +31,7 @@ namespace TableIT.Remote.ViewModels
             PanCommand = new RelayCommand<PanDirection>(OnPan);
             ZoomCommand = new RelayCommand<string>(OnZoom);
 
-            Client = new TableClient("https://tableitfunctions.azurewebsites.net/api", "TABLE");
+            Client = new TableClient();
             Task.Run(async () =>
             {
                 try
@@ -40,8 +47,9 @@ namespace TableIT.Remote.ViewModels
             });
         }
 
-        private async void OnZoom(string zoomAdjustment)
+        private async void OnZoom(string? zoomAdjustment)
         {
+            if (string.IsNullOrEmpty(zoomAdjustment)) return;
             await Client.SendZoom(float.Parse(zoomAdjustment));
         }
 

@@ -8,12 +8,25 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
       <RowDefinition />
     </Grid.RowDefinitions>
 
     <Label Text="{Binding Status}" />
 
-    <Grid HorizontalOptions="Center" VerticalOptions="Center" GridLayout.Row="1">
+    <Grid GridLayout.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <Editor Text="{Binding TargetUserId}"
+              Keyboard="Plain" 
+              TextTransform="Uppercase" 
+              Placeholder="Target User Id" />
+    </Grid>
+
+    <Grid HorizontalOptions="Center" VerticalOptions="Center" GridLayout.Row="2">
       <Grid.RowDefinitions>
         <RowDefinition Height="80" />
         <RowDefinition Height="80" />
@@ -62,6 +75,7 @@
               GridLayout.Column="0"
               GridLayout.Row="4" />
       <Button x:Name="Reset"
+              ImageSource="reset.svg"
               GridLayout.Column="1"
               GridLayout.Row="4" />
       <Button Command="{Binding ZoomCommand}"

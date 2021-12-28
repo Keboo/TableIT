@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace TableIT.Functions
 {
-    public class SignalRTestHub : ServerlessHub
+    public class TableItHub : ServerlessHub
     {
         private const string TableIdClaimType = "tableid";
 
@@ -31,7 +31,7 @@ namespace TableIT.Functions
             }
 
             logger.LogInformation($"{nameof(Negotiate)}: claims {string.Join(",", claims.Select(x => $"[{x.Type}, {x.Value}]"))}");
-
+            
             return Negotiate(userName ?? $"annoymous-user-{Guid.NewGuid()}");
         }
 
@@ -50,9 +50,8 @@ namespace TableIT.Functions
         }
 
         [FunctionName(nameof(OnConnected))]
-        public async Task OnConnected([SignalRTrigger] InvocationContext invocationContext, ILogger logger)
+        public void OnConnected([SignalRTrigger] InvocationContext invocationContext, ILogger logger)
         {
-            
             //await Clients.All.SendAsync(NewConnectionTarget, new NewConnection(invocationContext.ConnectionId));
             logger.LogInformation($"{invocationContext.ConnectionId} has connected, {invocationContext.UserId} {string.Join(",", invocationContext.Claims.Select(x => $"[{x.Key}, {x.Value}]"))}");
         }

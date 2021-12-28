@@ -8,15 +8,15 @@ namespace TableIT.Core
     {
         private readonly HubConnection _connection;
 
-        public TableClient(string endpoint, string? userId = null)
+        public string UserId { get; }
+
+        public TableClient(string? endpoint = null, string? userId = null)
         {
+            UserId = userId ?? GenerateUserId();
             _connection = new HubConnectionBuilder()
-                .WithUrl(endpoint, options =>
+                .WithUrl(endpoint ?? "https://tableitfunctions.azurewebsites.net/api", options =>
                 {
-                    if (!string.IsNullOrWhiteSpace(userId))
-                    {
-                        options.Headers["Authorization"] = ServiceUtils.GenerateAccessToken(userId!);
-                    }
+                    options.Headers["Authorization"] = ServiceUtils.GenerateAccessToken(UserId);
                 })
                 .WithAutomaticReconnect()
                 .Build();
@@ -38,6 +38,19 @@ namespace TableIT.Core
         public async Task StartAsync()
         {
             await _connection.StartAsync();
+        }
+
+        private const string IdLetters = "ACDEFGHJKMNPRSTWXYZ12345679";
+        private static Random Random { get; } = new Random();
+
+        public static string GenerateUserId(int legnth = 6)
+        {
+            var letters = new char[legnth];
+            for(int i =0; i < letters.Length; i++)
+            {
+                letters[i] = IdLetters[Random.Next(IdLetters.Length)];
+            }
+            return new string(letters);
         }
 
         ValueTask IAsyncDisposable.DisposeAsync()

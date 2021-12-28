@@ -16,7 +16,8 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <TextBlock x:Name="Text" Text="Some text" />
+    <TextBlock x:Name="Status" />
+    <TextBlock x:Name="UserId" Grid.Column="0" HorizontalAlignment="Right" />
     <ScrollViewer ZoomMode="Enabled"
                   Grid.Column="0"
                   Grid.Row="1"
