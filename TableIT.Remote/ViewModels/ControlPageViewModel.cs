@@ -8,9 +8,11 @@ namespace TableIT.Remote.ViewModels
 {
     public class ControlPageViewModel : ObservableObject
     {
-        private TableClient Client { get; }
+        private TableClient? Client { get; set; }
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
+
+        public IRelayCommand ConnectCommand { get; }
 
         private string? _status;
         public string? Status
@@ -28,14 +30,51 @@ namespace TableIT.Remote.ViewModels
 
         public ControlPageViewModel()
         {
-            PanCommand = new RelayCommand<PanDirection>(OnPan);
-            ZoomCommand = new RelayCommand<string>(OnZoom);
+            PanCommand = new AsyncRelayCommand<PanDirection>(OnPan);
+            ZoomCommand = new AsyncRelayCommand<string>(OnZoom);
+            ConnectCommand = new AsyncRelayCommand(OnConnect);
+        }
 
-            Client = new TableClient();
-            Task.Run(async () =>
+        private async Task OnZoom(string? zoomAdjustment)
+        {
+            if (string.IsNullOrEmpty(zoomAdjustment)) return;
+            if (Client is { } client)
+            {
+                await client.SendZoom(float.Parse(zoomAdjustment));
+            }
+        }
+
+        private async Task OnPan(PanDirection direction)
+        {
+            if (Client is { } client)
+            {
+                switch (direction)
+                {
+                    case PanDirection.Left:
+                        await client.SendPan(-20, null);
+                        break;
+                    case PanDirection.Right:
+                        await client.SendPan(20, null);
+                        break;
+                    case PanDirection.Up:
+                        await client.SendPan(null, -20);
+                        break;
+                    case PanDirection.Down:
+                        await client.SendPan(null, 20);
+                        break;
+                }
+            }
+        }
+
+        private async Task OnConnect()
+        {
+            var targetUserId = TargetUserId;
+            if (targetUserId?.Length != 6) return;
+            await Task.Run(async () =>
             {
                 try
                 {
+                    var client = Client = new TableClient(userId: targetUserId);
                     Status = "Connecting...";
                     await Client.StartAsync();
                     Status = "Connected";
@@ -45,31 +84,6 @@ namespace TableIT.Remote.ViewModels
                     Status = $"Error: {e.Message}";
                 }
             });
-        }
-
-        private async void OnZoom(string? zoomAdjustment)
-        {
-            if (string.IsNullOrEmpty(zoomAdjustment)) return;
-            await Client.SendZoom(float.Parse(zoomAdjustment));
-        }
-
-        private async void OnPan(PanDirection direction)
-        {
-            switch(direction)
-            {
-                case PanDirection.Left:
-                    await Client.SendPan(-20, null);
-                    break;
-                case PanDirection.Right:
-                    await Client.SendPan(20, null);
-                    break;
-                case PanDirection.Up:
-                    await Client.SendPan(null, -20);
-                    break;
-                case PanDirection.Down:
-                    await Client.SendPan(null, 20);
-                    break;
-            }
         }
     }
 

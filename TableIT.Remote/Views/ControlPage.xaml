@@ -12,21 +12,29 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <Label Text="{Binding Status}" />
+    <Label Text="{Binding Status}" Margin="5,2"/>
 
-    <Grid GridLayout.Row="1">
+    <Grid GridLayout.Row="1" Margin="5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
 
       <Editor Text="{Binding TargetUserId}"
-              Keyboard="Plain" 
-              TextTransform="Uppercase" 
+              Keyboard="Plain"
+              TextTransform="Uppercase"
+              PlaceholderColor="{DynamicResource Foreground}"
+              TextColor="{DynamicResource Foreground}"
               Placeholder="Target User Id" />
+      <Button Text="Connect" 
+              Command="{Binding ConnectCommand}"
+              GridLayout.Column="1"/>
     </Grid>
 
-    <Grid HorizontalOptions="Center" VerticalOptions="Center" GridLayout.Row="2">
+    <Grid GridLayout.Row="2" HorizontalOptions="Center" VerticalOptions="Center">
       <Grid.RowDefinitions>
         <RowDefinition Height="80" />
         <RowDefinition Height="80" />
@@ -40,10 +48,6 @@
         <ColumnDefinition Width="80" />
       </Grid.ColumnDefinitions>
 
-      <!--
-      NB: The anchors are to work around an Android issue
-      https://github.com/dotnet/maui/issues/3398#issuecomment-985268105
-      -->
       <Button x:Name="UpButton"
               Command="{Binding PanCommand}"
               CommandParameter="{x:Static vm:PanDirection.Up}"

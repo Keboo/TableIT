@@ -22,6 +22,7 @@
                   Grid.Column="0"
                   Grid.Row="1"
                   CanDrag="True"
+                  MaxZoomFactor="100"
                   ZoomSnapPointsType="None"
                   VerticalScrollMode="Enabled"
                   VerticalScrollBarVisibility="Auto"
