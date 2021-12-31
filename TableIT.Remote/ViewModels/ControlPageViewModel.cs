@@ -8,10 +8,10 @@ namespace TableIT.Remote.ViewModels
 {
     public class ControlPageViewModel : ObservableObject
     {
-        private TableClient? Client { get; set; }
         public IRelayCommand<PanDirection> PanCommand { get; }
         public IRelayCommand<string> ZoomCommand { get; }
 
+        private TableClientManager ClientManager { get; }
         public IRelayCommand ConnectCommand { get; }
 
         private string? _status;
@@ -28,17 +28,18 @@ namespace TableIT.Remote.ViewModels
             set => SetProperty(ref _targetUserId, value);
         }
 
-        public ControlPageViewModel()
+        public ControlPageViewModel(TableClientManager clientManager)
         {
             PanCommand = new AsyncRelayCommand<PanDirection>(OnPan);
             ZoomCommand = new AsyncRelayCommand<string>(OnZoom);
             ConnectCommand = new AsyncRelayCommand(OnConnect);
+            ClientManager = clientManager;
         }
 
         private async Task OnZoom(string? zoomAdjustment)
         {
             if (string.IsNullOrEmpty(zoomAdjustment)) return;
-            if (Client is { } client)
+            if (ClientManager.GetClient() is { } client)
             {
                 await client.SendZoom(float.Parse(zoomAdjustment));
             }
@@ -46,7 +47,7 @@ namespace TableIT.Remote.ViewModels
 
         private async Task OnPan(PanDirection direction)
         {
-            if (Client is { } client)
+            if (ClientManager.GetClient() is { } client)
             {
                 switch (direction)
                 {
@@ -74,9 +75,10 @@ namespace TableIT.Remote.ViewModels
             {
                 try
                 {
-                    var client = Client = new TableClient(userId: targetUserId);
+                    ClientManager.WithUserId(targetUserId);
+                    TableClient client = ClientManager.GetClient();
                     Status = "Connecting...";
-                    await Client.StartAsync();
+                    await client.StartAsync();
                     Status = "Connected";
                 }
                 catch (Exception e)

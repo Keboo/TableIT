@@ -49,6 +49,20 @@ namespace TableIT.Functions
             await Clients.User(invocationContext.UserId).SendAsync(nameof(ZoomMessage).ToLowerInvariant(), message);
         }
 
+        [FunctionName(nameof(RequestMessage))]
+        public async Task RequestMessage([SignalRTrigger] InvocationContext invocationContext, string message, ILogger logger)
+        {
+            logger.LogInformation($"Receive {nameof(RequestMessage)} from {invocationContext.ConnectionId} for user {invocationContext.UserId}.");
+            await Clients.User(invocationContext.UserId).SendAsync(nameof(RequestMessage).ToLowerInvariant(), message);
+        }
+
+        [FunctionName(nameof(ResponseMessage))]
+        public async Task ResponseMessage([SignalRTrigger] InvocationContext invocationContext, string message, ILogger logger)
+        {
+            logger.LogInformation($"Receive {nameof(ResponseMessage)} from {invocationContext.ConnectionId} for user {invocationContext.UserId}.");
+            await Clients.User(invocationContext.UserId).SendAsync(nameof(ResponseMessage).ToLowerInvariant(), message);
+        }
+
         [FunctionName(nameof(OnConnected))]
         public void OnConnected([SignalRTrigger] InvocationContext invocationContext, ILogger logger)
         {

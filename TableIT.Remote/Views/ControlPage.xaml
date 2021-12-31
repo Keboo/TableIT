@@ -78,10 +78,10 @@
               ImageSource="magnify_minus.svg"
               GridLayout.Column="0"
               GridLayout.Row="4" />
-      <Button x:Name="Reset"
+      <!--<Button x:Name="Reset"
               ImageSource="reset.svg"
               GridLayout.Column="1"
-              GridLayout.Row="4" />
+              GridLayout.Row="4" />-->
       <Button Command="{Binding ZoomCommand}"
               CommandParameter="0.1"
               ImageSource="magnify_plus.svg"

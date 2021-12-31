@@ -29,7 +29,10 @@
                   HorizontalScrollMode="Enabled"
                   HorizontalScrollBarVisibility="Auto"
                   x:Name="ScrollViewer">
-      <Image Source="Images/Docks.jpg" />
+      <Grid>
+        <TextBlock Text="Load an image" FontSize="80" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <Image x:Name="Image" />
+      </Grid>
     </ScrollViewer>
   </Grid>
 </Page>

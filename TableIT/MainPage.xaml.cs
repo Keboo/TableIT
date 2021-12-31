@@ -12,6 +12,7 @@ namespace TableIT
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private readonly ImageManager _imageManager = new();
         private TableClient _client;
         public MainPage()
         {
@@ -22,60 +23,95 @@ namespace TableIT
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>
                 {
-                    Status.Text = "Connecting...";
+                    Status.Text = "Loading images...";
                 });
-                try
-                {
-                    _client = new TableClient();
-
-                    _client.Register<PanMessage>(async message =>
-                    {
-                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                        () =>
-                        {
-                            Status.Text = $"got pan message {message.HorizontalOffset}x{message.VerticalOffset}";
-                            double? horizontalOffset = null;
-                            if (message.HorizontalOffset != null)
-                            {
-                                horizontalOffset = ScrollViewer.HorizontalOffset + message.HorizontalOffset;
-                            }
-                            double? verticalOffset = null;
-                            if (message.VerticalOffset != null)
-                            {
-                                verticalOffset = ScrollViewer.VerticalOffset + message.VerticalOffset;
-                            }
-                            ScrollViewer.ChangeView(horizontalOffset, verticalOffset, null);
-                        });
-                    });
-
-                    _client.Register<ZoomMessage>(async message =>
-                    {
-                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                        () =>
-                        {
-                            Status.Text = $"got zoom message {message.ZoomAdjustment}";
-                            ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + message.ZoomAdjustment);
-                        });
-                    });
-
-                    await _client.StartAsync();
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    () =>
-                    {
-                        UserId.Text = $"ID: {_client.UserId}";
-                        Status.Text = "Connected";
-                    });
-                }
-                catch (Exception ex)
+                await _imageManager.Load();
+                if (await _imageManager.GetCurrentImage() is { } image)
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    () =>
+                    async () =>
                     {
-                        Status.Text = $"Error: {ex.Message}";
+                        Image.Source = await image.GetImageSource();
                     });
                 }
+                
+                await ConnectToServer();
             });
 
+        }
+
+        private async Task ConnectToServer()
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    Status.Text = "Connecting...";
+                });
+            try
+            {
+                _client = new TableClient();
+
+                _client.Register<PanMessage>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"got pan message {message.HorizontalOffset}x{message.VerticalOffset}";
+                        double? horizontalOffset = null;
+                        if (message.HorizontalOffset != null)
+                        {
+                            horizontalOffset = ScrollViewer.HorizontalOffset + message.HorizontalOffset;
+                        }
+                        double? verticalOffset = null;
+                        if (message.VerticalOffset != null)
+                        {
+                            verticalOffset = ScrollViewer.VerticalOffset + message.VerticalOffset;
+                        }
+                        ScrollViewer.ChangeView(horizontalOffset, verticalOffset, null);
+                    });
+                });
+
+                _client.Register<ZoomMessage>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"got zoom message {message.ZoomAdjustment}";
+                        ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + message.ZoomAdjustment);
+                    });
+                });
+
+                _client.Handle<ListImagesRequest, ListImagesResponse>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"Listing images";
+                    });
+                    var response = new ListImagesResponse();
+                    await foreach (Image image in _imageManager.GetImages())
+                    {
+                        response.Images.Add(image.Name);
+                    }
+                    return response;
+                });
+
+                await _client.StartAsync();
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    UserId.Text = $"ID: {_client.UserId}";
+                    Status.Text = "Connected";
+                });
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    Status.Text = $"Error: {ex.Message}";
+                });
+            }
         }
     }
 }

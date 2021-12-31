@@ -5,7 +5,13 @@
        x:Class="TableIT.Remote.AppShell">
   <FlyoutItem Title="Control">
     <Tab>
-      <ShellContent ContentTemplate="{DataTemplate views:ControlPage}" />
+      <ShellContent x:Name="ControlShell" />
+    </Tab>
+  </FlyoutItem>
+  <FlyoutItem Title="Images">
+    <Tab>
+      <ShellContent x:Name="ImagesShell"
+        ContentTemplate="{DataTemplate views:ControlPage}" />
     </Tab>
   </FlyoutItem>
   <!--<FlyoutItem Title="Maps">
