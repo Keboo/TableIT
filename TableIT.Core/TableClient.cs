@@ -9,6 +9,7 @@ namespace TableIT.Core
 {
     public class TableClient : IAsyncDisposable
     {
+        public event EventHandler ConnectionStateChanged;
         private readonly HubConnection _connection;
 
         public string UserId { get; }
@@ -23,7 +24,31 @@ namespace TableIT.Core
                 })
                 .WithAutomaticReconnect()
                 .Build();
+
+            _connection.Closed += ConnectionClosed;
+            _connection.Reconnected += ConnectionReconnected;
+            _connection.Reconnecting += ConnectionReconnecting;
         }
+
+        private Task ConnectionReconnecting(Exception? arg)
+        {
+            ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
+
+        private Task ConnectionReconnected(string? arg)
+        {
+            ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
+
+        private Task ConnectionClosed(Exception? arg)
+        {
+            ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
+
+        public HubConnectionState ConnectionState => _connection.State;
 
         public void Register<TMessage>(Action<TMessage> handler)
         {
@@ -58,6 +83,7 @@ namespace TableIT.Core
         }
 
         public async Task<TResponse?> SendRequestAsync<TRequest, TResponse>(TRequest request)
+            
         {
             RequestMessage requestMessage = new()
             {
@@ -98,6 +124,7 @@ namespace TableIT.Core
         public async Task StartAsync()
         {
             await _connection.StartAsync();
+            ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private const string IdLetters = "ACDEFGHJKMNPRSTWXYZ12345679";

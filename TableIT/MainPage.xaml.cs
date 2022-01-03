@@ -91,7 +91,11 @@ namespace TableIT
                     var response = new ListImagesResponse();
                     await foreach (Image image in _imageManager.GetImages())
                     {
-                        response.Images.Add(image.Name);
+                        response.Images.Add(new ImageData
+                        {
+                            Id = image.Id,
+                            Name = image.Name 
+                        });
                     }
                     return response;
                 });

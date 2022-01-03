@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
 
@@ -21,6 +23,16 @@ namespace TableIT.Core
             {
                 ZoomAdjustment = zoomAdjustment
             });
+        }
+
+        public static async Task<IReadOnlyList<ImageData>> GetImages(this TableClient client)
+        {
+            ListImagesResponse? response = await client.SendRequestAsync<ListImagesRequest, ListImagesResponse>(new ListImagesRequest());
+            if (response is not null)
+            {
+                return response.Images;
+            }
+            return Array.Empty<ImageData>();
         }
 
         public static async Task SendImage(this TableClient client, Stream imageStream)

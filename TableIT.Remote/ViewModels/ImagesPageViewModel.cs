@@ -2,19 +2,37 @@
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
 
 namespace TableIT.Remote.ViewModels
 {
+    public class ImageViewModel
+    {
+        public ImageViewModel(ImageData data)
+        {
+            Data = data;
+        }
+
+        public ImageData Data { get; }
+        public string? Name => Data.Name;
+    }
+
     public class ImagesPageViewModel : ObservableObject
     {
-        private TableClient Client { get; }
-        
         public IRelayCommand PickImage { get; }
         public TableClientManager ClientManager { get; }
+
+        private IReadOnlyList<ImageViewModel>? _images;
+        public IReadOnlyList<ImageViewModel>? Images
+        {
+            get => _images;
+            set => SetProperty(ref _images, value);
+        }
 
         public ImagesPageViewModel(TableClientManager clientManager)
         {
@@ -26,7 +44,9 @@ namespace TableIT.Remote.ViewModels
         {
             if (ClientManager.GetClient() is { } client)
             {
-                var response = await client.SendRequestAsync<ListImagesRequest, ListImagesResponse>(new ListImagesRequest());
+                Images = (await client.GetImages())
+                    .Select(x => new ImageViewModel(x))
+                    .ToList();
             }
         }
 
@@ -36,7 +56,7 @@ namespace TableIT.Remote.ViewModels
             {
                 using Stream stream = await fileResult.OpenReadAsync();
 
-                await Client.SendImage(stream);
+                //await Client.SendImage(stream);
             }
         }
 

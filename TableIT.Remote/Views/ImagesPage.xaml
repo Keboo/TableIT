@@ -12,6 +12,12 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    
+    <ListView ItemsSource="{Binding Images}">
+      <ListView.ItemTemplate>
+        <DataTemplate x:DataType="vm:ImageViewModel">
+          <TextCell Text="{Binding Name}" TextColor="{DynamicResource Foreground}" />
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
   </Grid>
 </ContentPage>

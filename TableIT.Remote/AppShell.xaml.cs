@@ -5,11 +5,15 @@ namespace TableIT.Remote
 {
     public partial class AppShell : Shell
     {
-        public AppShell(ControlPage controlPage, ImagesPage imagesPage)
+        public AppShell(
+            ControlPage controlPage,
+            ImagesPage imagesPage)
         {
             InitializeComponent();
             ControlShell!.ContentTemplate = new DataTemplate(() => controlPage);
             ImagesShell!.ContentTemplate = new DataTemplate(() => imagesPage);
+
         }
+
     }
 }

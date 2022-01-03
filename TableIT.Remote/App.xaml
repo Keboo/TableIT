@@ -11,6 +11,7 @@
       <Color x:Key="SecondaryColor">#FFC938</Color>
       <Color x:Key="Background">#202020</Color>
       <Color x:Key="Foreground">#DDDDDD</Color>
+      <Color x:Key="ErrorForeground">#CF6679</Color>
 
       <Style TargetType="Label">
         <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />

@@ -16,6 +16,7 @@ namespace TableIT
             File = file;
         }
 
+        public Guid Id { get; } = Guid.NewGuid();
         public string Name => File.DisplayName;
         public StorageFile File { get; }
 

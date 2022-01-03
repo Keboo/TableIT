@@ -5,89 +5,58 @@
              x:DataType="vm:ControlPageViewModel"
              BackgroundColor="{DynamicResource Background}">
 
-  <Grid>
+  <Grid HorizontalOptions="Center" VerticalOptions="Center">
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition />
+      <RowDefinition Height="80" />
+      <RowDefinition Height="80" />
+      <RowDefinition Height="80" />
+      <RowDefinition Height="20" />
+      <RowDefinition Height="80" />
     </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition Width="80" />
+    </Grid.ColumnDefinitions>
 
-    <Label Text="{Binding Status}" Margin="5,2"/>
+    <Button x:Name="UpButton"
+            Command="{Binding PanCommand}"
+            CommandParameter="{x:Static vm:PanDirection.Up}"
+            ImageSource="arrow_up.svg" 
+            GridLayout.Column="1"
+            GridLayout.Row="0" />
+    <Button x:Name="RightButton"
+            Command="{Binding PanCommand}"
+            CommandParameter="{x:Static vm:PanDirection.Right}"
+            ImageSource="arrow_right.svg"
+            GridLayout.Column="2"
+            GridLayout.Row="1"/>
+    <Button x:Name="DownButton"
+            Command="{Binding PanCommand}"
+            CommandParameter="{x:Static vm:PanDirection.Down}"
+            ImageSource="arrow_down.svg"
+            GridLayout.Column="1"
+            GridLayout.Row="2"/>
+    <Button x:Name="LeftButton"
+            Command="{Binding PanCommand}"
+            CommandParameter="{x:Static vm:PanDirection.Left}"
+            ImageSource="arrow_left.svg"
+            GridLayout.Column="0"
+            GridLayout.Row="1"/>
 
-    <Grid GridLayout.Row="1" Margin="5">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition />
-        <ColumnDefinition Width="Auto"/>
-      </Grid.ColumnDefinitions>
-
-      <Editor Text="{Binding TargetUserId}"
-              Keyboard="Plain"
-              TextTransform="Uppercase"
-              PlaceholderColor="{DynamicResource Foreground}"
-              TextColor="{DynamicResource Foreground}"
-              Placeholder="Target User Id" />
-      <Button Text="Connect" 
-              Command="{Binding ConnectCommand}"
-              GridLayout.Column="1"/>
-    </Grid>
-
-    <Grid GridLayout.Row="2" HorizontalOptions="Center" VerticalOptions="Center">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="80" />
-        <RowDefinition Height="80" />
-        <RowDefinition Height="80" />
-        <RowDefinition Height="20" />
-        <RowDefinition Height="80" />
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="80" />
-        <ColumnDefinition Width="80" />
-        <ColumnDefinition Width="80" />
-      </Grid.ColumnDefinitions>
-
-      <Button x:Name="UpButton"
-              Command="{Binding PanCommand}"
-              CommandParameter="{x:Static vm:PanDirection.Up}"
-              ImageSource="arrow_up.svg" 
-              GridLayout.Column="1"
-              GridLayout.Row="0" />
-      <Button x:Name="RightButton"
-              Command="{Binding PanCommand}"
-              CommandParameter="{x:Static vm:PanDirection.Right}"
-              ImageSource="arrow_right.svg"
-              GridLayout.Column="2"
-              GridLayout.Row="1"/>
-      <Button x:Name="DownButton"
-              Command="{Binding PanCommand}"
-              CommandParameter="{x:Static vm:PanDirection.Down}"
-              ImageSource="arrow_down.svg"
-              GridLayout.Column="1"
-              GridLayout.Row="2"/>
-      <Button x:Name="LeftButton"
-              Command="{Binding PanCommand}"
-              CommandParameter="{x:Static vm:PanDirection.Left}"
-              ImageSource="arrow_right.svg"
-              GridLayout.Column="0"
-              GridLayout.Row="1"/>
-
-      <Button Command="{Binding ZoomCommand}"
-              CommandParameter="-0.1"
-              ImageSource="magnify_minus.svg"
-              GridLayout.Column="0"
-              GridLayout.Row="4" />
-      <!--<Button x:Name="Reset"
+    <Button Command="{Binding ZoomCommand}"
+            CommandParameter="-0.1"
+            ImageSource="magnify_minus.svg"
+            GridLayout.Column="0"
+            GridLayout.Row="4" />
+    <!--<Button x:Name="Reset"
               ImageSource="reset.svg"
               GridLayout.Column="1"
               GridLayout.Row="4" />-->
-      <Button Command="{Binding ZoomCommand}"
-              CommandParameter="0.1"
-              ImageSource="magnify_plus.svg"
-              GridLayout.Column="2"
-              GridLayout.Row="4"/>
-
-    </Grid>
+    <Button Command="{Binding ZoomCommand}"
+            CommandParameter="0.1"
+            ImageSource="magnify_plus.svg"
+            GridLayout.Column="2"
+            GridLayout.Row="4"/>
   </Grid>
 </ContentPage>

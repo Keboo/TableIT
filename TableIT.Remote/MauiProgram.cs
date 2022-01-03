@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using TableIT.Remote.ViewModels;
 using TableIT.Remote.Views;
 
@@ -26,6 +27,10 @@ namespace TableIT.Remote
             builder.Services.AddSingleton<ImagesPage>();
             builder.Services.AddSingleton<ImagesPageViewModel>();
 
+            builder.Services.AddSingleton<ConnectPage>();
+            builder.Services.AddSingleton<ConnectPageViewModel>();
+
+            builder.Services.AddSingleton<IMessenger, WeakReferenceMessenger>();
             builder.Services.AddSingleton<TableClientManager>();
 
             return builder.Build();
