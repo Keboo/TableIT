@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Essentials;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
@@ -11,7 +12,7 @@ using TableIT.Core.Messages;
 
 namespace TableIT.Remote.ViewModels
 {
-    public class ImageViewModel
+    public class ImageViewModel : ObservableObject
     {
         public ImageViewModel(ImageData data)
         {
@@ -20,6 +21,13 @@ namespace TableIT.Remote.ViewModels
 
         public ImageData Data { get; }
         public string? Name => Data.Name;
+
+        private ImageSource? _image;
+        public ImageSource? Image
+        {
+            get => _image;
+            set => SetProperty(ref _image, value);
+        }
     }
 
     public class ImagesPageViewModel : ObservableObject
@@ -47,6 +55,12 @@ namespace TableIT.Remote.ViewModels
                 Images = (await client.GetImages())
                     .Select(x => new ImageViewModel(x))
                     .ToList();
+
+                await Task.WhenAll(Images.Select(async x => {
+                    byte[] data = await client.GetImage(x.Data.Id);
+                    var ms = new MemoryStream(data);
+                    x.Image = ImageSource.FromStream(() => ms);
+                }));
             }
         }
 

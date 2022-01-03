@@ -35,6 +35,16 @@ namespace TableIT.Core
             return Array.Empty<ImageData>();
         }
 
+        public static async Task<byte[]> GetImage(this TableClient client, Guid imageId)
+        {
+            GetImageResponse? response = await client.SendRequestAsync<GetImageRequest, GetImageResponse>(new GetImageRequest(imageId));
+            if (response?.Base64Data is not null)
+            {
+                return Convert.FromBase64String(response.Base64Data);
+            }
+            return Array.Empty<byte>();
+        }
+
         public static async Task SendImage(this TableClient client, Stream imageStream)
         {
             //TODO: Compression

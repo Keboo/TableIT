@@ -100,6 +100,26 @@ namespace TableIT
                     return response;
                 });
 
+                _client.Handle<GetImageRequest, GetImageResponse>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"Getting image {message.ImageId}";
+                    });
+                    var response = new GetImageResponse();
+                    await foreach (Image image in _imageManager.GetImages())
+                    {
+                        if (image.Id == message.ImageId)
+                        {
+                            response.TotalParts = 1;
+                            response.Index = 0;
+                            response.Base64Data = Convert.ToBase64String(await image.GetBytes());
+                        }
+                    }
+                    return response;
+                });
+
                 await _client.StartAsync();
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>

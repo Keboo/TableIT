@@ -127,7 +127,7 @@ namespace TableIT.Core
             ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private const string IdLetters = "ACDEFGHJKMNPRSTWXYZ12345679";
+        private const string IdLetters = "ACDEFGHJKMNPRSTWXYZ1234679";
         private static Random Random { get; } = new Random();
 
         public static string GenerateUserId(int legnth = 6)

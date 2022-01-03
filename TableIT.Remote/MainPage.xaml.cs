@@ -17,7 +17,6 @@ namespace TableIT.Remote
         {
             count++;
             CounterLabel.Text = $"Current count: {count}";
-
             SemanticScreenReader.Announce(CounterLabel.Text);
         }
     }

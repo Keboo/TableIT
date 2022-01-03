@@ -15,7 +15,9 @@
     <ListView ItemsSource="{Binding Images}">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ImageViewModel">
-          <TextCell Text="{Binding Name}" TextColor="{DynamicResource Foreground}" />
+          <ImageCell ImageSource="{Binding Image}" 
+                     Text="{Binding Name}" 
+                     TextColor="{DynamicResource Foreground}" />
         </DataTemplate>
       </ListView.ItemTemplate>
     </ListView>

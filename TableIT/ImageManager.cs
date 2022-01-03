@@ -4,30 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace TableIT
 {
-    public class Image
-    {
-        public Image(StorageFile file)
-        {
-            File = file;
-        }
-
-        public Guid Id { get; } = Guid.NewGuid();
-        public string Name => File.DisplayName;
-        public StorageFile File { get; }
-
-        internal async Task<ImageSource> GetImageSource()
-        {
-            BitmapImage bitmapImage = new();
-            await bitmapImage.SetSourceAsync(await File.OpenReadAsync());
-            return bitmapImage;
-        }
-    }
-
     internal class ImageManager
     {
         private List<Image> Images { get; } = new();
