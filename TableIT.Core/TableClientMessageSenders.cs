@@ -52,13 +52,19 @@ namespace TableIT.Core
             const int payloadSize = 5_000;
 
             byte[] bytes = new byte[payloadSize];
-            int readBytes;
+            int index = 0;
+            int totalParts = (int)(numBytes / payloadSize);
+            if (numBytes % payloadSize != 0) totalParts++;
+            Guid id = Guid.NewGuid();
 
-            while ((readBytes = await imageStream.ReadAsync(bytes, 0, payloadSize)) > 0)
+            while (await imageStream.ReadAsync(bytes, 0, payloadSize) > 0)
             {
                 await client.SendAsync(new LoadImageMessage
                 {
-                    
+                    ImageId = id,
+                    TotalParts = totalParts,
+                    Index = index,
+                    Base64Data = Convert.ToBase64String(bytes),
                 });
             }
         }

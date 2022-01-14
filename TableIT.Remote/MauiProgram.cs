@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using TableIT.Remote.ViewModels;
@@ -11,13 +12,14 @@ namespace TableIT.Remote
     {
         public static MauiApp CreateMauiApp()
         {
-            var builder = MauiApp.CreateBuilder();
+            MauiAppBuilder builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                });
+                })
+                .ConfigureEssentials();
 
             builder.Services.AddSingleton<AppShell>();
 

@@ -1,0 +1,21 @@
+﻿using System;
+
+namespace TableIT.Core.Messages
+{
+    public class EnvelopeMessage
+    {
+        public Guid GroupId { get; set; }
+        public int TotalParts { get; set; }
+        public int Index { get; set; }
+        public string? Data { get; set; }
+    }
+
+    public class MultiPartMessage
+    {
+        public Guid GroupId { get; set; }
+        public int TotalParts { get; set; }
+        public int Index { get; set; }
+
+        public string? Base64Data { get; set; }
+    }
+}

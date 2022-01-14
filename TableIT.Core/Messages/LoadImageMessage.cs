@@ -1,6 +1,9 @@
-﻿namespace TableIT.Core.Messages
+﻿using System;
+
+namespace TableIT.Core.Messages
 {
-    public class LoadImageMessage
+    public class LoadImageMessage : MultiPartMessage
     {
+        public Guid ImageId { get; set; } 
     }
 }

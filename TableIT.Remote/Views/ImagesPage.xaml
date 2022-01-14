@@ -8,11 +8,14 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/>
-      <RowDefinition Height="Auto"/>
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <ListView ItemsSource="{Binding Images}">
+    <Button Text="Import"
+            Command="{Binding ImportCommand}" 
+            GridLayout.Row="0" />
+
+    <ListView ItemsSource="{Binding Images}" GridLayout.Row="1">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ImageViewModel">
           <ImageCell ImageSource="{Binding Image}" 

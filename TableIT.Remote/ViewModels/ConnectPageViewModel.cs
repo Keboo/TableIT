@@ -48,6 +48,7 @@ namespace TableIT.Remote.ViewModels
                 return;
             }
             IsConnecting = true;
+            await Task.Yield();
             ClientManager.WithUserId(userId);
             var client = ClientManager.GetClient();
             try

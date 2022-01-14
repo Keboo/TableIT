@@ -12,27 +12,9 @@ using TableIT.Core.Messages;
 
 namespace TableIT.Remote.ViewModels
 {
-    public class ImageViewModel : ObservableObject
-    {
-        public ImageViewModel(ImageData data)
-        {
-            Data = data;
-        }
-
-        public ImageData Data { get; }
-        public string? Name => Data.Name;
-
-        private ImageSource? _image;
-        public ImageSource? Image
-        {
-            get => _image;
-            set => SetProperty(ref _image, value);
-        }
-    }
-
     public class ImagesPageViewModel : ObservableObject
     {
-        public IRelayCommand PickImage { get; }
+        public IRelayCommand ImportCommand { get; }
         public TableClientManager ClientManager { get; }
 
         private IReadOnlyList<ImageViewModel>? _images;
@@ -44,7 +26,7 @@ namespace TableIT.Remote.ViewModels
 
         public ImagesPageViewModel(TableClientManager clientManager)
         {
-            PickImage = new AsyncRelayCommand(OnPickImage);
+            ImportCommand = new AsyncRelayCommand(OnImport);
             ClientManager = clientManager;
         }
 
@@ -64,42 +46,28 @@ namespace TableIT.Remote.ViewModels
             }
         }
 
-        private async Task OnPickImage()
+        private async Task OnImport()
         {
             if (await PickAndShow(PickOptions.Images) is { } fileResult)
             {
                 using Stream stream = await fileResult.OpenReadAsync();
 
-                //await Client.SendImage(stream);
+                await ClientManager.GetClient().SendImage(stream);
             }
         }
 
-        private async Task<FileResult?> PickAndShow(PickOptions options)
+        private static async Task<FileResult?> PickAndShow(PickOptions options)
         {
             try
             {
-                var result = await FilePicker.PickAsync(options);
-                if (result != null)
-                {
-                    //Text = $"File Name: {result.FileName}";
-                    if (result.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
-                        result.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
-                    {
-                        //Stream stream = await result.OpenReadAsync();
-
-
-                        //Image = ImageSource.FromStream(() => stream);
-                    }
-                }
-
+                FileResult? result = await Device.InvokeOnMainThreadAsync(async () => await FilePicker.PickAsync(options));
                 return result;
             }
             catch (Exception ex)
             {
                 // The user canceled or something went wrong
+                return null;
             }
-
-            return null;
         }
     }
 }

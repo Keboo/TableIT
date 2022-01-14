@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,8 +10,55 @@ namespace TableIT.Core
 {
     public class TableClient : IAsyncDisposable
     {
+        private class MessageCache
+        {
+            private class CacheItem
+            {
+                public DateTime Expiration { get; } = DateTime.Now + TimeSpan.FromMinutes(15);
+
+                private List<(int, string)> Items { get; } = new();
+
+                public int Add(int index, string data)
+                {
+                    lock(Items)
+                    {
+                        Items.Add((index, data));
+                        return Items.Count;
+                    }
+                }
+            }
+
+            private Dictionary<Guid, CacheItem> Items { get; } = new();
+
+            public int AddData(Guid id, int index, string data)
+            {
+                CacheItem item;
+                lock(Items)
+                {
+                    if (!Items.TryGetValue(id, out item))
+                    {
+                        Items[id] = item = new CacheItem();
+                    }
+                }
+                return item.Add(index, data);
+            }
+
+            public string? GetMessage(Guid id)
+            {
+                lock(Items)
+                {
+                    if (Items.TryGetValue(id, out CacheItem item))
+                    {
+                        return item.GetData();
+                    }
+                }
+                return null;
+            }
+        }
+
         public event EventHandler ConnectionStateChanged;
         private readonly HubConnection _connection;
+        private MessageCache Cache { get; } = new();
 
         public string UserId { get; }
 
@@ -51,12 +99,33 @@ namespace TableIT.Core
         public HubConnectionState ConnectionState => _connection.State;
 
         public void Register<TMessage>(Action<TMessage> handler)
+            where TMessage : class
         {
             //TODO handle return from On<>
             _connection.On<string>(typeof(TMessage).Name.ToLowerInvariant(), data =>
             {
-                handler(JsonSerializer.Deserialize<TMessage>(data));
+                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
+                if (envelope is not null &&
+                    GetMessage<TMessage>(envelope) is { } message)
+                {
+                    handler(message);
+                }
             });
+        }
+
+        private TMessage? GetMessage<TMessage>(EnvelopeMessage envelopeMessage)
+            where TMessage : class
+        {
+            if (envelopeMessage.TotalParts == 1)
+            {
+                return JsonSerializer.Deserialize<TMessage>(envelopeMessage.Data ?? "");
+            }
+            int received = Cache.AddData(envelopeMessage.GroupId, envelopeMessage.Index, envelopeMessage.Data ?? "");
+            if (received == envelopeMessage.TotalParts)
+            {
+                return Cache.GetMessage<TMessage>(envelopeMessage.GroupId);
+            }
+            return null;
         }
 
         public void Handle<TRequest, TResponse>(Func<TRequest, Task<TResponse>> asyncHandler)
@@ -83,7 +152,6 @@ namespace TableIT.Core
         }
 
         public async Task<TResponse?> SendRequestAsync<TRequest, TResponse>(TRequest request)
-            
         {
             RequestMessage requestMessage = new()
             {
@@ -116,9 +184,27 @@ namespace TableIT.Core
             return response;
         }
 
-        public async Task SendAsync<TMessage>(TMessage message)
+        public async Task SendAsync<TMessage>(TMessage message, bool allowSplitting = false)
         {
-            await _connection.SendAsync(typeof(TMessage).Name.ToLowerInvariant(), JsonSerializer.Serialize(message));
+            const int payloadSize = 5_000;
+            string data = JsonSerializer.Serialize(message);
+
+            int totalParts = data.Length / payloadSize;
+            if (data.Length % payloadSize != 0) totalParts++;
+            Guid id = Guid.NewGuid();
+
+            for (int index = 0; index < totalParts; index++)
+            {
+                var envelope = new EnvelopeMessage
+                {
+                    GroupId = id,
+                    Index = index,
+                    TotalParts = totalParts,
+                    Data = data[(index * payloadSize)..payloadSize]
+                };
+
+                await _connection.SendAsync(typeof(TMessage).Name.ToLowerInvariant(), JsonSerializer.Serialize(envelope));
+            }
         }
 
         public async Task StartAsync()

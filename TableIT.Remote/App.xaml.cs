@@ -9,7 +9,6 @@ namespace TableIT.Remote
         public App(AppShell appShell, ConnectPage connectPage, IMessenger messenger)
         {
             InitializeComponent();
-
             MainPage = connectPage;
             AppShell = appShell;
             messenger.Register(this);
