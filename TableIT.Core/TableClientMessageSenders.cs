@@ -46,26 +46,19 @@ namespace TableIT.Core
             return Array.Empty<byte>();
         }
 
-        public static async Task SendImage(this TableClient client, Stream imageStream)
+        public static async Task SendImage(this TableClient client, string name, Stream imageStream)
         {
-            //TODO: Compression
-            long numBytes = imageStream.Length;
-            const int payloadSize = 5_000;
-
-            byte[] bytes = new byte[payloadSize];
-            int index = 0;
-            int totalParts = (int)(numBytes / payloadSize);
-            if (numBytes % payloadSize != 0) totalParts++;
             Guid id = Guid.NewGuid();
+            using var ms = new MemoryStream();
+            await imageStream.CopyToAsync(ms);
 
-            while (await imageStream.ReadAsync(bytes, 0, payloadSize) > 0)
+            await client.SendAsync(new LoadImageMessage
             {
-                await client.SendAsync(new LoadImageMessage
-                {
-                    ImageId = id,
-                    Base64Data = Convert.ToBase64String(bytes),
-                });
-            }
+                ImageId = id,
+                ImageName = "TestImage",
+                Base64Data = Convert.ToBase64String(ms.ToArray()),
+            });
+
         }
     }
 }

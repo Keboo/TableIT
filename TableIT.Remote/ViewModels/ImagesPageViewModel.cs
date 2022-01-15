@@ -15,6 +15,7 @@ namespace TableIT.Remote.ViewModels
     public class ImagesPageViewModel : ObservableObject
     {
         public IRelayCommand ImportCommand { get; }
+        public IRelayCommand RefreshCommand { get; }
         public TableClientManager ClientManager { get; }
 
         private IReadOnlyList<ImageViewModel>? _images;
@@ -27,6 +28,7 @@ namespace TableIT.Remote.ViewModels
         public ImagesPageViewModel(TableClientManager clientManager)
         {
             ImportCommand = new AsyncRelayCommand(OnImport);
+            RefreshCommand = new AsyncRelayCommand(LoadImages);
             ClientManager = clientManager;
         }
 
