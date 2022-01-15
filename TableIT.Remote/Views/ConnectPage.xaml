@@ -1,6 +1,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TableIT.Remote.ViewModels"
+             xmlns:maui="clr-namespace:Microsoft.Maui;assembly=Microsoft.Maui"
              xmlns:converters="clr-namespace:TableIT.Remote.Converters"
              x:Class="TableIT.Remote.Views.ConnectPage"
              x:DataType="vm:ConnectPageViewModel"
@@ -9,17 +10,25 @@
     <converters:InvertBoolConverter x:Key="InvertBoolConverter"/>
   </ContentPage.Resources>
   <Grid>
-    <StackLayout VerticalOptions="Center">
+    <StackLayout VerticalOptions="Center" Margin="10">
       <ActivityIndicator IsEnabled="{Binding IsConnecting}" 
                          IsRunning="{Binding IsConnecting}"
                          IsVisible="{Binding IsConnecting}"/>
-      <Editor Text="{Binding UserId}"
-              Keyboard="Plain"
-              TextTransform="Uppercase"
-              PlaceholderColor="{DynamicResource Foreground}"
-              TextColor="{DynamicResource Foreground}"
-              Placeholder="Target User Id" 
-              IsVisible="{Binding IsConnecting, Converter={StaticResource InvertBoolConverter}}"/>
+      <Entry Text="{Binding UserId}"
+             TextTransform="Uppercase"
+             PlaceholderColor="{DynamicResource Foreground}"
+             TextColor="{DynamicResource Foreground}"
+             Placeholder="Target User Id" 
+             IsVisible="{Binding IsConnecting, Converter={StaticResource InvertBoolConverter}}"
+             Margin="0,10">
+        <Entry.Keyboard>
+          <maui:Keyboard x:FactoryMethod="Create">
+            <x:Arguments>
+              <maui:KeyboardFlags>CapitalizeCharacter</maui:KeyboardFlags>
+            </x:Arguments>
+          </maui:Keyboard>
+        </Entry.Keyboard>
+      </Entry>
       <Button Text="Connect" 
               Command="{Binding ConnectCommand}"
               GridLayout.Column="1"/>

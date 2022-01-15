@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
 
@@ -25,9 +26,9 @@ namespace TableIT.Core
             });
         }
 
-        public static async Task<IReadOnlyList<ImageData>> GetImages(this TableClient client)
+        public static async Task<IReadOnlyList<ImageData>> GetImages(this TableClient client, CancellationToken? token = null)
         {
-            ListImagesResponse? response = await client.SendRequestAsync<ListImagesRequest, ListImagesResponse>(new ListImagesRequest());
+            ListImagesResponse? response = await client.SendRequestAsync<ListImagesRequest, ListImagesResponse>(new ListImagesRequest(), token);
             if (response is not null)
             {
                 return response.Images;
@@ -35,9 +36,9 @@ namespace TableIT.Core
             return Array.Empty<ImageData>();
         }
 
-        public static async Task<byte[]> GetImage(this TableClient client, Guid imageId)
+        public static async Task<byte[]> GetImage(this TableClient client, Guid imageId, CancellationToken? token = null)
         {
-            GetImageResponse? response = await client.SendRequestAsync<GetImageRequest, GetImageResponse>(new GetImageRequest(imageId));
+            GetImageResponse? response = await client.SendRequestAsync<GetImageRequest, GetImageResponse>(new GetImageRequest(imageId), token);
             if (response?.Base64Data is not null)
             {
                 return Convert.FromBase64String(response.Base64Data);
@@ -62,8 +63,6 @@ namespace TableIT.Core
                 await client.SendAsync(new LoadImageMessage
                 {
                     ImageId = id,
-                    TotalParts = totalParts,
-                    Index = index,
                     Base64Data = Convert.ToBase64String(bytes),
                 });
             }

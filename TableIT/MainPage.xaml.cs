@@ -112,8 +112,6 @@ namespace TableIT
                     {
                         if (image.Id == message.ImageId)
                         {
-                            response.TotalParts = 1;
-                            response.Index = 0;
                             response.Base64Data = Convert.ToBase64String(await image.GetBytes());
                         }
                     }

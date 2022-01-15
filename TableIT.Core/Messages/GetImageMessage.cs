@@ -12,8 +12,8 @@ namespace TableIT.Core.Messages
         public Guid ImageId { get; set; }
     }
 
-    public class GetImageResponse : MultiPartMessage
+    public class GetImageResponse
     {
-        
+        public string? Base64Data { get; set; }
     }
 }

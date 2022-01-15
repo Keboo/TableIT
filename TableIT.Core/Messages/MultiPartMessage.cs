@@ -12,10 +12,6 @@ namespace TableIT.Core.Messages
 
     public class MultiPartMessage
     {
-        public Guid GroupId { get; set; }
-        public int TotalParts { get; set; }
-        public int Index { get; set; }
-
         public string? Base64Data { get; set; }
     }
 }
