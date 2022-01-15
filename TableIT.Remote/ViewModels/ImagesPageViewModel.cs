@@ -53,8 +53,8 @@ namespace TableIT.Remote.ViewModels
             if (await PickAndShow(PickOptions.Images) is { } fileResult)
             {
                 using Stream stream = await fileResult.OpenReadAsync();
-
-                await ClientManager.GetClient().SendImage(stream);
+                //TODO: prompt for name
+                await ClientManager.GetClient().SendImage(fileResult.FileName, stream);
             }
         }
 

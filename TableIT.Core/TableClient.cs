@@ -119,14 +119,18 @@ namespace TableIT.Core
 
         public HubConnectionState ConnectionState => _connection.State;
 
-        public void Register<TMessage>(Action<TMessage> handler)
+        public IDisposable Register<TMessage>(Action<TMessage> handler)
+            where TMessage : class
+            => Register(typeof(TMessage).Name.ToLowerInvariant(), handler);
+
+        public IDisposable Register<TMessage>(string methodName, Action<TMessage> handler)
             where TMessage : class
         {
-            //TODO handle return from On<>
-            _connection.On<string>(typeof(TMessage).Name.ToLowerInvariant(), data =>
+            return _connection.On<string>(methodName, data =>
             {
                 var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
                 if (envelope is not null &&
+                    envelope.DataType == typeof(TMessage).FullName &&
                     GetMessage<TMessage>(envelope) is { } message)
                 {
                     handler(message);
@@ -134,7 +138,7 @@ namespace TableIT.Core
             });
         }
 
-        public async Task SendAsync<TMessage>(TMessage message)
+        public async Task SendAsync<TMessage>(string methodName, TMessage message)
         {
             const int payloadSize = 5_000;
             string data = JsonSerializer.Serialize(message);
@@ -152,12 +156,16 @@ namespace TableIT.Core
                     GroupId = id,
                     Index = index,
                     TotalParts = totalParts,
+                    DataType = typeof(TMessage).FullName,
                     Data = data.Substring(dataIndex, dataSize)
                 };
 
-                await _connection.SendAsync(typeof(TMessage).Name.ToLowerInvariant(), JsonSerializer.Serialize(envelope));
+                await _connection.SendAsync(methodName, JsonSerializer.Serialize(envelope));
             }
         }
+
+        public Task SendAsync<TMessage>(TMessage message)
+            => SendAsync(typeof(TMessage).Name.ToLowerInvariant(), message);
 
         private TMessage? GetMessage<TMessage>(EnvelopeMessage envelopeMessage)
             where TMessage : class

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
@@ -11,7 +12,7 @@ namespace TableIT.Core
     {
         public static async Task SendPan(this TableClient client, int? horizontalOffset, int? verticalOffset)
         {
-            await client.SendAsync(new PanMessage
+            await client.SendTableMessage(new PanMessage
             {
                 HorizontalOffset = horizontalOffset,
                 VerticalOffset = verticalOffset
@@ -20,11 +21,21 @@ namespace TableIT.Core
 
         public static async Task SendZoom(this TableClient client, float zoomAdjustment)
         {
-            await client.SendAsync(new ZoomMessage
+            await client.SendTableMessage(new ZoomMessage
             {
                 ZoomAdjustment = zoomAdjustment
             });
         }
+
+        private static async Task SendTableMessage<TMessage>(this TableClient client, TMessage message) 
+            => await client.SendAsync("tablemessage", message);
+
+        public static IDisposable RegisterTableMessage<TMessage>(this TableClient client, Action<TMessage> handler)
+            where TMessage : class
+            => client.Register("tablemessage", handler);
+
+        private static async Task SendRemoteMessage<TMessage>(this TableClient client, TMessage message) 
+            => await client.SendAsync("remotemessage", message);
 
         public static async Task<IReadOnlyList<ImageData>> GetImages(this TableClient client, CancellationToken? token = null)
         {
@@ -52,10 +63,10 @@ namespace TableIT.Core
             using var ms = new MemoryStream();
             await imageStream.CopyToAsync(ms);
 
-            await client.SendAsync(new LoadImageMessage
+            await client.SendTableMessage(new LoadImageMessage
             {
                 ImageId = id,
-                ImageName = "TestImage",
+                ImageName = name,
                 Base64Data = Convert.ToBase64String(ms.ToArray()),
             });
 

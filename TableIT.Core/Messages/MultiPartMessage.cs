@@ -8,6 +8,7 @@ namespace TableIT.Core.Messages
         public int TotalParts { get; set; }
         public int Index { get; set; }
         public string? Data { get; set; }
+        public string? DataType { get; set; }
     }
 
     public class MultiPartMessage

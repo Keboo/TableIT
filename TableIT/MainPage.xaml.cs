@@ -51,7 +51,7 @@ namespace TableIT
             {
                 _client = new TableClient();
 
-                _client.Register<PanMessage>(async message =>
+                _client.RegisterTableMessage<PanMessage>(async message =>
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     () =>
@@ -71,7 +71,7 @@ namespace TableIT
                     });
                 });
 
-                _client.Register<ZoomMessage>(async message =>
+                _client.RegisterTableMessage<ZoomMessage>(async message =>
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     () =>
@@ -79,6 +79,17 @@ namespace TableIT
                         Status.Text = $"got zoom message {message.ZoomAdjustment}";
                         ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + message.ZoomAdjustment);
                     });
+                });
+
+                _client.RegisterTableMessage<LoadImageMessage>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"Loading image {message.ImageName}";
+                    });
+                    byte[] imageData = Convert.FromBase64String(message.Base64Data);
+                    await _imageManager.AddImage(message.ImageName, imageData, message.ImageId);
                 });
 
                 _client.Handle<ListImagesRequest, ListImagesResponse>(async message =>

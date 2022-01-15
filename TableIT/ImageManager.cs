@@ -25,7 +25,7 @@ namespace TableIT
 
                 StorageFolder storageFolder = ApplicationData.Current.LocalCacheFolder;
                 
-                StorageFolder imagesFolder = await storageFolder.CreateFolderAsync("Images", CreationCollisionOption.OpenIfExists);
+                StorageFolder imagesFolder = await GetImagesFolder();
                 StorageFolder embeddedFolder = await imagesFolder.CreateFolderAsync("Embedded", CreationCollisionOption.OpenIfExists);
                 //Ensure bundled images exist
                 foreach (var file in Directory.EnumerateFiles("Images"))
@@ -76,9 +76,20 @@ namespace TableIT
             }
         }
 
-        public async Task AddImage()
+        private static async Task<StorageFolder> GetImagesFolder()
         {
+            StorageFolder storageFolder = ApplicationData.Current.LocalCacheFolder;
 
+            return await storageFolder.CreateFolderAsync("Images", CreationCollisionOption.OpenIfExists);
+        }
+
+        public async Task AddImage(string name, byte[] data, Guid id)
+        {
+            StorageFolder folder = await GetImagesFolder();
+            StorageFile file = await folder.CreateFileAsync(name, CreationCollisionOption.GenerateUniqueName);
+            using var writeStream = await file.OpenStreamForWriteAsync();
+            await writeStream.WriteAsync(data,0, data.Length);
+            Images.Add(new Image(file));
         }
     }
 }
