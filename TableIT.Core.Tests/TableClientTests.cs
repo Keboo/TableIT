@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
 using Xunit;
@@ -18,7 +17,7 @@ public class TableClientTests
         await using var client = new TableClient(userId: table.UserId);
         await client.StartAsync();
 
-        Task<ZoomMessage> getMessage = table.WaitForMessage<ZoomMessage>();
+        Task<ZoomMessage> getMessage = table.WaitForTableMessage<ZoomMessage>();
 
         await client.SendZoom(0.42f);
         ZoomMessage message = await getMessage;
@@ -34,7 +33,7 @@ public class TableClientTests
         await using var client = new TableClient(userId: table.UserId);
         await client.StartAsync();
 
-        Task<PanMessage> getMessage = table.WaitForMessage<PanMessage>();
+        Task<PanMessage> getMessage = table.WaitForTableMessage<PanMessage>();
 
         await client.SendPan(-5, 12_000);
         PanMessage message = await getMessage;
@@ -105,6 +104,33 @@ public class TableClientTests
 
         Assert.Equal(bytes.Length, imageData.Length);
         Assert.Equal(bytes, imageData);
+    }
+
+    [Fact]
+    public async Task CanSendImageData()
+    {
+        await using var table = new TableClient();
+        await table.StartAsync();
+        await using var client = new TableClient(userId: table.UserId);
+        await client.StartAsync();
+
+        var random = new Random();
+        //Big enough to cause multiple messages
+        byte[] bytes = new byte[12_163];
+        random.NextBytes(bytes);
+
+        Task<LoadImageMessage> getMessage = table.WaitForTableMessage<LoadImageMessage>();
+
+        using (var ms = new MemoryStream(bytes))
+        {
+            await client.SendImage("test image", ms);
+        }
+        LoadImageMessage message = await getMessage;
+
+        byte[] imageData = Convert.FromBase64String(message.Base64Data);
+        Assert.Equal(bytes.Length, imageData.Length);
+        Assert.Equal(bytes, imageData);
+        Assert.Equal("test image", message.ImageName);
     }
 }
 
