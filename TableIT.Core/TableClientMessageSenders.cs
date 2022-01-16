@@ -30,9 +30,9 @@ namespace TableIT.Core
         private static async Task SendTableMessage<TMessage>(this TableClient client, TMessage message) 
             => await client.SendAsync("tablemessage", message);
 
-        public static IDisposable RegisterTableMessage<TMessage>(this TableClient client, Action<TMessage> handler)
+        public static void RegisterTableMessage<TMessage>(this TableClient client, Action<TMessage> handler)
             where TMessage : class
-            => client.Register("tablemessage", handler);
+            => client.Register<TMessage>(handler);
 
         private static async Task SendRemoteMessage<TMessage>(this TableClient client, TMessage message) 
             => await client.SendAsync("remotemessage", message);

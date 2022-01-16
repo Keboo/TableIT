@@ -16,7 +16,7 @@ namespace TableIT.Core
         {
             private class CacheItem
             {
-                public DateTime Expiration { get; } = DateTime.Now + TimeSpan.FromMinutes(15);
+                public DateTime Expiration { get; } = DateTime.UtcNow + TimeSpan.FromMinutes(5);
 
                 private List<(int, string)> Items { get; } = new();
 
@@ -63,6 +63,13 @@ namespace TableIT.Core
                     {
                         return item.GetData();
                     }
+                    foreach (KeyValuePair<Guid, CacheItem> kvp in Items.ToList())
+                    {
+                        if (kvp.Value.Expiration > DateTime.UtcNow)
+                        {
+                            Items.Remove(kvp.Key);
+                        }
+                    }
                 }
                 return null;
             }
@@ -94,9 +101,90 @@ namespace TableIT.Core
                 .WithAutomaticReconnect()
                 .Build();
 
+            _ = _connection.On<string>("tablemessage", async data =>
+            {
+                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
+                if (envelope is not null)
+                {
+                    await ProcessMessage(envelope);
+                }
+            });
+            _ = _connection.On<string>(typeof(ResponseMessage).Name.ToLowerInvariant(), async data =>
+            {
+                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
+                if (envelope is not null)
+                {
+                    await ProcessMessage(envelope);
+                }
+            });
+            _ = _connection.On<string>(typeof(RequestMessage).Name.ToLowerInvariant(), async data =>
+            {
+                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
+                if (envelope is not null)
+                {
+                    await ProcessMessage(envelope);
+                }
+            });
+
+
             _connection.Closed += ConnectionClosed;
             _connection.Reconnected += ConnectionReconnected;
             _connection.Reconnecting += ConnectionReconnecting;
+        }
+
+        private Dictionary<string?, List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>>> Handlers { get; } = new();
+
+        private async Task ProcessMessage(EnvelopeMessage envelope)
+        {
+            List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>> handlers;
+            lock (Handlers)
+            {
+                if (!Handlers.TryGetValue(envelope.DataType, out handlers))
+                {
+                    handlers = new(handlers);
+                    return;
+                }
+            }
+            foreach (var handler in handlers)
+            {
+                if (await handler(envelope) is { } response)
+                {
+                    await SendAsync(response.MethodName, response.DataType, response.Data, envelope.GroupId);
+                }
+            }
+        }
+
+        public void Register<TMessage>(Action<TMessage> handler)
+            where TMessage : class
+            => Register<TMessage>(handler, null);
+
+        private void Register<T>(Action<T> handler, Guid? forGroupId)
+            where T : class
+            => Register(new Func<T, Task<EnvelopeResponse?>>(msg =>
+            {
+                handler(msg);
+                return Task.FromResult<EnvelopeResponse?>(null);
+            }), forGroupId);
+
+        private void Register<T>(Func<T, Task<EnvelopeResponse?>> handler, Guid? forGroupId)
+            where T : class
+        {
+            lock (Handlers)
+            {
+                if (!Handlers.TryGetValue(typeof(T).FullName, out List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>> handlers))
+                {
+                    Handlers[typeof(T).FullName] = handlers = new();
+                }
+                handlers.Add(async msg =>
+                {
+                    if (forGroupId != null && msg.GroupId != forGroupId) return null;
+                    if (GetMessage<T>(msg) is { } response)
+                    {
+                        return await handler(response);
+                    }
+                    return null;
+                });
+            }
         }
 
         private Task ConnectionReconnecting(Exception? arg)
@@ -119,33 +207,19 @@ namespace TableIT.Core
 
         public HubConnectionState ConnectionState => _connection.State;
 
-        public IDisposable Register<TMessage>(Action<TMessage> handler)
-            where TMessage : class
-            => Register(typeof(TMessage).Name.ToLowerInvariant(), handler);
-
-        public IDisposable Register<TMessage>(string methodName, Action<TMessage> handler)
-            where TMessage : class
-        {
-            return _connection.On<string>(methodName, data =>
-            {
-                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
-                if (envelope is not null &&
-                    envelope.DataType == typeof(TMessage).FullName &&
-                    GetMessage<TMessage>(envelope) is { } message)
-                {
-                    handler(message);
-                }
-            });
-        }
-
         public async Task SendAsync<TMessage>(string methodName, TMessage message)
         {
-            const int payloadSize = 5_000;
             string data = JsonSerializer.Serialize(message);
+            await SendAsync(methodName, typeof(TMessage), data);
+        }
+
+        private async Task SendAsync(string methodName, Type dataType, string data, Guid? groupId = null)
+        {
+            const int payloadSize = 5_000;
+            groupId ??= Guid.NewGuid();
 
             int totalParts = data.Length / payloadSize;
             if (data.Length % payloadSize != 0) totalParts++;
-            Guid id = Guid.NewGuid();
 
             for (int index = 0; index < totalParts; index++)
             {
@@ -153,16 +227,17 @@ namespace TableIT.Core
                 var dataSize = Math.Min(payloadSize, data.Length - dataIndex);
                 var envelope = new EnvelopeMessage
                 {
-                    GroupId = id,
+                    GroupId = groupId.Value,
                     Index = index,
                     TotalParts = totalParts,
-                    DataType = typeof(TMessage).FullName,
+                    DataType = dataType.FullName,
                     Data = data.Substring(dataIndex, dataSize)
                 };
 
                 await _connection.SendAsync(methodName, JsonSerializer.Serialize(envelope));
             }
         }
+
 
         public Task SendAsync<TMessage>(TMessage message)
             => SendAsync(typeof(TMessage).Name.ToLowerInvariant(), message);
@@ -183,37 +258,26 @@ namespace TableIT.Core
         }
 
         public void Handle<TRequest, TResponse>(Func<TRequest, Task<TResponse?>> asyncHandler)
+            where TRequest : class
         {
-            _connection.On<string>(typeof(RequestMessage).Name.ToLowerInvariant(), async data =>
+            Register<TRequest>(async request =>
             {
-                var request = JsonSerializer.Deserialize<RequestMessage>(data);
-                if (typeof(TRequest).FullName == request?.RequestType)
+                if (await asyncHandler(request) is { } responseData)
                 {
-                    TRequest? requestData = JsonSerializer.Deserialize<TRequest>(request.RequestData);
-                    TResponse? responseData = requestData is not null ? await asyncHandler(requestData) : default;
-                    ResponseMessage response = new()
+                    return new EnvelopeResponse()
                     {
-                        RequestId = request.RequestId,
-                        ResponseType = typeof(TResponse).FullName
+                        MethodName = typeof(ResponseMessage).Name.ToLowerInvariant(),
+                        DataType = typeof(TResponse),
+                        Data = JsonSerializer.Serialize(responseData)
                     };
-                    if (responseData is not null)
-                    {
-                        response.ResponseData = JsonSerializer.Serialize(responseData);
-                    }
-                    await SendAsync(response);
                 }
-            });
+                return null;
+            }, null);
         }
 
         public async Task<TResponse?> SendRequestAsync<TRequest, TResponse>(TRequest request, CancellationToken? token = null)
+            where TResponse : class
         {
-            RequestMessage requestMessage = new()
-            {
-                RequestId = Guid.NewGuid(),
-                RequestData = JsonSerializer.Serialize(request),
-                RequestType = typeof(TRequest).FullName!
-            };
-
             //TODO: reduce allocations when not needed
             using CancellationTokenSource cts = new();
             if (token is null)
@@ -230,25 +294,18 @@ namespace TableIT.Core
                 token = cts.Token;
             }
 
-            TResponse? response = default;
-            using SemaphoreSlim waitHandle = new(0);
-            using IDisposable _ = _connection.On<string>(typeof(ResponseMessage).Name.ToLowerInvariant(), data =>
+            Guid groupId = Guid.NewGuid();
+
+            var tcs = new TaskCompletionSource<TResponse?>();
+            token.Value.Register(() => tcs.TrySetResult(null));
+            
+            Register<TResponse>(response =>
             {
-                var envelope = JsonSerializer.Deserialize<EnvelopeMessage>(data);
-                if (envelope is not null &&
-                    GetMessage<ResponseMessage>(envelope) is { } message &&
-                    message.RequestId == requestMessage.RequestId && 
-                    message.ResponseType == typeof(TResponse).FullName)
-                {
-                    response = JsonSerializer.Deserialize<TResponse>(message.ResponseData);
-                    waitHandle.Release();
-                }
-            });
+                tcs.TrySetResult(response);
+            }, groupId);
 
-            await _connection.SendAsync(typeof(RequestMessage).Name.ToLowerInvariant(), JsonSerializer.Serialize(requestMessage));
-            await waitHandle.WaitAsync(token ?? CancellationToken.None);
-
-            return response;
+            await SendAsync(typeof(RequestMessage).Name.ToLowerInvariant(), typeof(TRequest), JsonSerializer.Serialize(request), groupId);
+            return await tcs.Task;
         }
 
         public async Task StartAsync()
