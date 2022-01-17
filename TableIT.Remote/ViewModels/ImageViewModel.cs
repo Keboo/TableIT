@@ -1,18 +1,19 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
-using TableIT.Core.Messages;
+using TableIT.Remote.Imaging;
 
 namespace TableIT.Remote.ViewModels
 {
     public class ImageViewModel : ObservableObject
     {
-        public ImageViewModel(ImageData data)
+
+        public ImageViewModel(RemoteImage data)
         {
             Data = data;
         }
 
-        public ImageData Data { get; }
-        public string? Name => Data.Name;
+        public RemoteImage Data { get; }
+        public string Name => Data.Name;
 
         private ImageSource? _image;
         public ImageSource? Image

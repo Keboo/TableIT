@@ -88,8 +88,8 @@ namespace TableIT
             StorageFolder folder = await GetImagesFolder();
             StorageFile file = await folder.CreateFileAsync(name, CreationCollisionOption.GenerateUniqueName);
             using var writeStream = await file.OpenStreamForWriteAsync();
-            await writeStream.WriteAsync(data,0, data.Length);
-            Images.Add(new Image(file));
+            await writeStream.WriteAsync(data, 0, data.Length);
+            Images.Add(new Image(file, id));
         }
     }
 }

@@ -22,7 +22,7 @@
     <Button x:Name="UpButton"
             Command="{Binding PanCommand}"
             CommandParameter="{x:Static vm:PanDirection.Up}"
-            ImageSource="arrow_up.svg" 
+            ImageSource="arrow_up.svg"
             GridLayout.Column="1"
             GridLayout.Row="0" />
     <Button x:Name="RightButton"

@@ -10,9 +10,13 @@ namespace TableIT
 {
     public class Image
     {
-        public Image(StorageFile file)
+        public Image(StorageFile file, Guid? id = null)
         {
             File = file;
+            if (id is not null)
+            {
+                Id = id.Value;
+            }
         }
 
         public Guid Id { get; } = Guid.NewGuid();
@@ -26,18 +30,38 @@ namespace TableIT
             return bitmapImage;
         }
 
-        internal async Task<byte[]> GetBytes()
+        internal async Task<byte[]> GetBytes(int? widthRequest, int? heightRequest)
         {
             using var ras = await File.OpenReadAsync();
             using var stream = ras.AsStreamForRead();
             using var image = SKImage.FromEncodedData(stream);
             using var bitmap = SKBitmap.FromImage(image);
 
-            const int thumbnailHeight = 100;
-            int thumbnailWidth = (int)((bitmap.Height / (double)bitmap.Width) * thumbnailHeight);
-            using var resized = bitmap.Resize(new SKImageInfo(thumbnailHeight, thumbnailWidth), SKFilterQuality.Medium);
-            using SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
-            return resizedData.ToArray();
+            if (widthRequest is not null && heightRequest is not null)
+            {
+                using var resized = bitmap.Resize(new SKImageInfo(heightRequest.Value, widthRequest.Value), SKFilterQuality.Medium);
+                using SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
+                return resizedData.ToArray();
+            }
+            else if (heightRequest is not null)
+            {
+                int thumbnailWidth = (int)((bitmap.Height / (double)bitmap.Width) * heightRequest.Value);
+                using var resized = bitmap.Resize(new SKImageInfo(heightRequest.Value, thumbnailWidth), SKFilterQuality.Medium);
+                using SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
+                return resizedData.ToArray();
+            }
+            else if (widthRequest is not null)
+            {
+                int thumbnailHeight = (int)((bitmap.Width / (double)bitmap.Height) * widthRequest.Value);
+                using var resized = bitmap.Resize(new SKImageInfo(thumbnailHeight, widthRequest.Value), SKFilterQuality.Medium);
+                using SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
+                return resizedData.ToArray();
+            }
+            else
+            {
+                using SKData resizedData = bitmap.Encode(SKEncodedImageFormat.Jpeg, 100);
+                return resizedData.ToArray();
+            }
         }
     }
 }

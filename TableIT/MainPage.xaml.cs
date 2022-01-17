@@ -49,8 +49,11 @@ namespace TableIT
                 });
             try
             {
+#if DEBUG
+                _client = new TableClient(userId: "DEBUG1");
+#else
                 _client = new TableClient();
-
+#endif
                 _client.RegisterTableMessage<PanMessage>(async message =>
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -123,7 +126,7 @@ namespace TableIT
                     {
                         if (image.Id == message.ImageId)
                         {
-                            response.Base64Data = Convert.ToBase64String(await image.GetBytes());
+                            response.Base64Data = Convert.ToBase64String(await image.GetBytes(message.Width, message.Height));
                         }
                     }
                     return response;

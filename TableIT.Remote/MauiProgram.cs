@@ -32,6 +32,10 @@ namespace TableIT.Remote
             builder.Services.AddSingleton<ConnectPage>();
             builder.Services.AddSingleton<ConnectPageViewModel>();
 
+            builder.Services.AddSingleton<ImageDetailsPage>();
+            builder.Services.AddSingleton<ImageDetailsPageViewModel>();
+
+            builder.Services.AddSingleton<Imaging.IImageManager, Imaging.ImageManager>();
             builder.Services.AddSingleton<IMessenger, WeakReferenceMessenger>();
             builder.Services.AddSingleton<TableClientManager>();
 

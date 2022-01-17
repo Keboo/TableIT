@@ -18,5 +18,13 @@ namespace TableIT.Remote.Views
             base.OnAppearing();
             await ViewModel.LoadImages();
         }
+
+        private void OnItemTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (e.Item is ImageViewModel imageViewModel)
+            {
+                ViewModel.OnItemSelected(imageViewModel);
+            }
+        }
     }
 }

@@ -16,7 +16,9 @@
             GridLayout.Row="0" />
 
     <ListView ItemsSource="{Binding Images}" GridLayout.Row="1" 
-              RefreshCommand="{Binding RefreshCommand}">
+              RefreshCommand="{Binding RefreshCommand}"
+              IsPullToRefreshEnabled="True"
+              ItemTapped="OnItemTapped">
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ImageViewModel">
           <ImageCell ImageSource="{Binding Image}" 

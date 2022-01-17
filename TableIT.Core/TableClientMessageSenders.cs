@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
@@ -47,9 +46,13 @@ namespace TableIT.Core
             return Array.Empty<ImageData>();
         }
 
-        public static async Task<byte[]> GetImage(this TableClient client, Guid imageId, CancellationToken? token = null)
+        public static async Task<byte[]> GetImage(this TableClient client, 
+            Guid imageId, 
+            int? width = null, 
+            int? height = null, 
+            CancellationToken? token = null)
         {
-            GetImageResponse? response = await client.SendRequestAsync<GetImageRequest, GetImageResponse>(new GetImageRequest(imageId), token);
+            GetImageResponse? response = await client.SendRequestAsync<GetImageRequest, GetImageResponse>(new GetImageRequest(imageId, width, height), token);
             if (response?.Base64Data is not null)
             {
                 return Convert.FromBase64String(response.Base64Data);
