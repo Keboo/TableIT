@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using TableIT.Remote.ViewModels;
 using TableIT.Remote.Views;
 
@@ -14,6 +15,7 @@ namespace TableIT.Remote
         {
             MauiAppBuilder builder = MauiApp.CreateBuilder();
             builder
+                .UseSkiaSharp()
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {

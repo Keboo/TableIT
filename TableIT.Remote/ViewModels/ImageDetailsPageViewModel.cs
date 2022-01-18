@@ -36,7 +36,7 @@ namespace TableIT.Remote.ViewModels
                 OnPropertyChanged(nameof(Image));
             }
         }
-        public ImageSource? Image => RemoteImage?.Image;
+        public byte[]? Image => RemoteImage?.ImageData;
 
         public async void ApplyQueryAttributes(IDictionary<string, object> query)
         {

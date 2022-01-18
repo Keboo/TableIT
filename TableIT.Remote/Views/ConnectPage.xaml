@@ -13,7 +13,8 @@
     <StackLayout VerticalOptions="Center" Margin="10">
       <ActivityIndicator IsEnabled="{Binding IsConnecting}" 
                          IsRunning="{Binding IsConnecting}"
-                         IsVisible="{Binding IsConnecting}"/>
+                         IsVisible="{Binding IsConnecting}"
+                         Margin="15"/>
       <Entry Text="{Binding UserId}"
              TextTransform="Uppercase"
              PlaceholderColor="{DynamicResource Foreground}"

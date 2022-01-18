@@ -11,6 +11,7 @@ namespace TableIT.Remote
         public App(AppShell appShell, ConnectPage connectPage, IMessenger messenger)
         {
             InitializeComponent();
+
             Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewMapper.AppendToMapping(nameof(ScrollView.Orientation), (handler, view) =>
             {
                 if (view.Orientation == ScrollOrientation.Both)

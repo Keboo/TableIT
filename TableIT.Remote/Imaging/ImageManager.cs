@@ -13,9 +13,11 @@ namespace TableIT.Remote.Imaging
     {
         public ImageSource? Thumbnail { get; private set; }
         public ImageSource? Image { get; private set; }
+        public byte[]? ImageData { get; private set; }
 
         internal void SetImageData(byte[] data)
         {
+            ImageData = data;
             var ms = new MemoryStream(data);
             Image = ImageSource.FromStream(() => ms);
         }
