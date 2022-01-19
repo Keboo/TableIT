@@ -28,5 +28,10 @@
         </DataTemplate>
       </ListView.ItemTemplate>
     </ListView>
+
+    <ActivityIndicator IsVisible="{Binding IsLoading}"
+                       IsRunning="{Binding IsLoading}"
+                       GridLayout.Row="1"
+                       VerticalOptions="Center" />
   </Grid>
 </ContentPage>

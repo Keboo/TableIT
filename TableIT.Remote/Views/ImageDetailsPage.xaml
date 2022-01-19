@@ -19,22 +19,13 @@
     <StackLayout Orientation="Horizontal">
       <Button Text="Select" Command="{Binding SelectCommand}"/>
     </StackLayout>
-    <!--<Grid GridLayout.Row="0" Background="Red" VerticalOptions="Start" HorizontalOptions="Start">
-      --><!--<Button Text="Select"
-              VerticalOptions="Start"
-              Command="{Binding SelectCommand}"/>--><!--
-    </Grid>-->
-
-    <!--<Button Text="Foo" GridLayout.Row="0" />-->
 
     <img:ImageContainer GridLayout.Row="1" IsClippedToBounds="True">
       <skia:SKCanvasView x:Name="Canvas" PaintSurface="Canvas_PaintSurface" />
     </img:ImageContainer>
-    <!--<ScrollView GridLayout.Row="0"
-                Orientation="Both"
-                Background="Red">
-      
-      <Image Source="{Binding Image}" Aspect="Fill" Margin="10" WidthRequest="1800" HeightRequest="1200"/>
-    </ScrollView>-->
+    <ActivityIndicator IsVisible="{Binding IsLoading}"
+                       IsRunning="{Binding IsLoading}"
+                       GridLayout.Row="1"
+                       VerticalOptions="Center" />
   </Grid>
 </ContentPage>

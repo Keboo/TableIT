@@ -33,6 +33,14 @@ namespace TableIT.Remote.ViewModels
         private TableClientManager ClientManager { get; }
         private IImageManager ImageManager { get; }
 
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         private RemoteImage? _remoteImage;
         private RemoteImage? RemoteImage
         {
@@ -50,11 +58,13 @@ namespace TableIT.Remote.ViewModels
 
         public async void ApplyQueryAttributes(IDictionary<string, object> query)
         {
+            IsLoading = true;
             if (query.TryGetQueryParamter("imageId", out Guid imageId) &&
                 await ImageManager.FindImage(imageId) is { } remoteImage)
             {
                 RemoteImage = await ImageManager.LoadImage(remoteImage);
             }
+            IsLoading = false;
         }
     }
 }

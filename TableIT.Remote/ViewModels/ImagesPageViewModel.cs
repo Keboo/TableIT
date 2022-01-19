@@ -29,6 +29,13 @@ namespace TableIT.Remote.ViewModels
             set => SetProperty(ref _images, value);
         }
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         public ImagesPageViewModel(
             TableClientManager clientManager,
             IImageManager imageManager, 
@@ -43,17 +50,19 @@ namespace TableIT.Remote.ViewModels
 
         public async Task LoadImages()
         {
+            IsLoading = true;
             Images = (await ImageManager.LoadImages(true))
                 .Select(x => new ImageViewModel(x))
                 .ToList();
 
-            await Task.WhenAll(Images.Select(async x => 
+            await Task.WhenAll(Images.Select(async x =>
             {
                 if (await ImageManager.LoadThumbnailImage(x.Data) is { } remoteImage)
                 {
                     x.Image = remoteImage.Thumbnail;
                 }
             }));
+            IsLoading = false;
         }
 
         private async Task OnImport()
