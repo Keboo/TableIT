@@ -72,7 +72,14 @@ namespace TableIT.Core
                 ImageName = name,
                 Base64Data = Convert.ToBase64String(ms.ToArray()),
             });
+        }
 
+        public static async Task SetCurrentImage(this TableClient client, Guid imageId)
+        {
+            await client.SendTableMessage(new SetImageMessage
+            {
+                ImageId = imageId,
+            });
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +11,7 @@ namespace TableIT
 {
     internal class ImageManager
     {
+        private Image? Current { get; set; }
         private List<Image> Images { get; } = new();
 
         public ImageManager()
@@ -55,7 +58,7 @@ namespace TableIT
                     }
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
 
             }
@@ -64,7 +67,16 @@ namespace TableIT
 
         public Task<Image?> GetCurrentImage()
         {
-            return Task.FromResult(Images.FirstOrDefault());
+            return Task.FromResult<Image?>(Current ??= Images.FirstOrDefault());
+        }
+
+        public Task<Image?> SetCurrentImage(Guid imageId)
+        {
+            if (Images.FirstOrDefault(x => x.Id == imageId) is { } image)
+            {
+                return Task.FromResult<Image?>(Current = image);
+            }
+            return Task.FromResult<Image?>(null);
         }
 
         public async IAsyncEnumerable<Image> GetImages()

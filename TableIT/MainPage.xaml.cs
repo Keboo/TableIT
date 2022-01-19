@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
@@ -13,7 +14,7 @@ namespace TableIT
     public sealed partial class MainPage : Page
     {
         private readonly ImageManager _imageManager = new();
-        private TableClient _client;
+        private TableClient? _client;
         public MainPage()
         {
             InitializeComponent();
@@ -92,7 +93,24 @@ namespace TableIT
                         Status.Text = $"Loading image {message.ImageName}";
                     });
                     byte[] imageData = Convert.FromBase64String(message.Base64Data);
-                    await _imageManager.AddImage(message.ImageName, imageData, message.ImageId);
+                    await _imageManager.AddImage(message.ImageName ?? "<none>", imageData, message.ImageId);
+                });
+
+                _client.RegisterTableMessage<SetImageMessage>(async message =>
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        Status.Text = $"Setting image {message.ImageId}";
+                    });
+                    if (await _imageManager.SetCurrentImage(message.ImageId) is { } image)
+                    {
+                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                        async () =>
+                        {
+                            Image.Source = await image.GetImageSource();
+                        });
+                    }
                 });
 
                 _client.Handle<ListImagesRequest, ListImagesResponse>(async message =>

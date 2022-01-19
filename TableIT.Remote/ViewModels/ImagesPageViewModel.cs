@@ -76,7 +76,7 @@ namespace TableIT.Remote.ViewModels
                 FileResult? result = await Device.InvokeOnMainThreadAsync(async () => await FilePicker.PickAsync(options));
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // The user canceled or something went wrong
                 return null;

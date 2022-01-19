@@ -44,7 +44,7 @@ namespace TableIT.Core
 
             public int AddData(Guid id, int index, string data)
             {
-                CacheItem item;
+                CacheItem? item;
                 lock (Items)
                 {
                     if (!Items.TryGetValue(id, out item))
@@ -59,7 +59,7 @@ namespace TableIT.Core
             {
                 lock (Items)
                 {
-                    if (Items.TryGetValue(id, out CacheItem item))
+                    if (Items.TryGetValue(id, out CacheItem? item))
                     {
                         return item.GetData();
                     }
@@ -132,14 +132,14 @@ namespace TableIT.Core
             _connection.Reconnecting += ConnectionReconnecting;
         }
 
-        private Dictionary<string?, List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>>> Handlers { get; } = new();
+        private Dictionary<string, List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>>> Handlers { get; } = new();
 
         private async Task ProcessMessage(EnvelopeMessage envelope)
         {
-            List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>> handlers;
+            List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>>? handlers;
             lock (Handlers)
             {
-                if (!Handlers.TryGetValue(envelope.DataType, out handlers))
+                if (!Handlers.TryGetValue(envelope.DataType ?? "", out handlers))
                 {
                     handlers = new(handlers);
                     return;
@@ -147,9 +147,12 @@ namespace TableIT.Core
             }
             foreach (var handler in handlers)
             {
-                if (await handler(envelope) is { } response)
+                if (await handler(envelope) is { } response &&
+                    response.MethodName is { } methodName &&
+                    response.DataType is { } dataType &&
+                    response.Data is { } data)
                 {
-                    await SendAsync(response.MethodName, response.DataType, response.Data, envelope.GroupId);
+                    await SendAsync(methodName, dataType, data, envelope.GroupId);
                 }
             }
         }

@@ -6,14 +6,14 @@ namespace TableIT.Remote.Imaging
 {
     //Based on https://github.com/xamarin/xamarin-forms-samples/tree/main/WorkingWithGestures/PinchGesture/PinchGesture
     //Based on https://github.com/xamarin/xamarin-forms-samples/tree/main/WorkingWithGestures/PanGesture/PanGesture
-    public class PinchToZoomContainer : ContentView
+    public class ImageContainer : ContentView
     {
         private double currentScale = 1;
         private double startScale = 1;
         private double xOffset = 0;
         private double yOffset = 0;
-        private double x, y;
-        public PinchToZoomContainer()
+        private double sX, sY;
+        public ImageContainer()
         {
             var pinchGesture = new PinchGestureRecognizer();
             pinchGesture.PinchUpdated += OnPinchUpdated;
@@ -89,7 +89,6 @@ namespace TableIT.Remote.Imaging
             }
         }
 
-        double sX, sY;
         private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
         {
             switch (e.StatusType)

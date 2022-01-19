@@ -3,27 +3,34 @@ using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
+using System.Threading.Tasks;
+using TableIT.Core;
 using TableIT.Remote.Imaging;
 
 namespace TableIT.Remote.ViewModels
 {
     public class ImageDetailsPageViewModel : ObservableObject, IQueryAttributable
     {
-
-        public ImageDetailsPageViewModel(IImageManager imageManager)
+        public ImageDetailsPageViewModel(
+            TableClientManager clientManager,
+            IImageManager imageManager)
         {
+            ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
             ImageManager = imageManager ?? throw new ArgumentNullException(nameof(imageManager));
-            SelectCommand = new RelayCommand(OnSelect);
+            SelectCommand = new AsyncRelayCommand(OnSelect);
         }
 
-        private void OnSelect()
+        private async Task OnSelect()
         {
-            
+            if (RemoteImage is { } remoteImage &&
+                ClientManager.GetClient() is { } client)
+            {
+                await client.SetCurrentImage(remoteImage.ImageId);
+            }
         }
 
-        public ICommand SelectCommand { get; }
-
+        public IAsyncRelayCommand SelectCommand { get; }
+        private TableClientManager ClientManager { get; }
         private IImageManager ImageManager { get; }
 
         private RemoteImage? _remoteImage;
@@ -32,8 +39,11 @@ namespace TableIT.Remote.ViewModels
             get => _remoteImage;
             set
             {
-                _remoteImage = value;
-                OnPropertyChanged(nameof(Image));
+                if (_remoteImage != value)
+                {
+                    _remoteImage = value;
+                    OnPropertyChanged(nameof(Image));
+                }
             }
         }
         public byte[]? Image => RemoteImage?.ImageData;
@@ -47,6 +57,4 @@ namespace TableIT.Remote.ViewModels
             }
         }
     }
-
-
 }

@@ -10,16 +10,4 @@ namespace TableIT.Core.Messages
         public string? Data { get; set; }
         public string? DataType { get; set; }
     }
-
-    public class EnvelopeResponse
-    {
-        public string? MethodName { get; set; }
-        public Type DataType { get; set; }
-        public string Data { get; set; }
-    }
-
-    public class MultiPartMessage
-    {
-        public string? Base64Data { get; set; }
-    }
 }

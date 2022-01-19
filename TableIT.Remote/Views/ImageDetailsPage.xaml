@@ -9,12 +9,16 @@
 
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
+    <StackLayout Orientation="Horizontal">
+      <Button Text="Select" Command="{Binding SelectCommand}"/>
+    </StackLayout>
     <!--<Grid GridLayout.Row="0" Background="Red" VerticalOptions="Start" HorizontalOptions="Start">
       --><!--<Button Text="Select"
               VerticalOptions="Start"
@@ -23,9 +27,9 @@
 
     <!--<Button Text="Foo" GridLayout.Row="0" />-->
 
-    <img:PinchToZoomContainer>
+    <img:ImageContainer GridLayout.Row="1">
       <skia:SKCanvasView x:Name="Canvas" PaintSurface="Canvas_PaintSurface" />
-    </img:PinchToZoomContainer>
+    </img:ImageContainer>
     <!--<ScrollView GridLayout.Row="0"
                 Orientation="Both"
                 Background="Red">

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -23,7 +22,7 @@ namespace Microsoft.Maui.Essentials
 
     public static class EssentialsExtensions
     {
-        public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder> configureDelegate = null)
+        public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder>? configureDelegate = null)
         {
             if (configureDelegate != null)
             {
@@ -79,7 +78,7 @@ namespace Microsoft.Maui.Essentials
             return builder;
         }
 
-        public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string subtitle = null, string icon = null) =>
+        public static IEssentialsBuilder AddAppAction(this IEssentialsBuilder essentials, string id, string title, string? subtitle = null, string? icon = null) =>
             essentials.AddAppAction(new AppAction(id, title, subtitle, icon));
 
         internal class EssentialsRegistration

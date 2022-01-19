@@ -127,10 +127,27 @@ public class TableClientTests
         }
         LoadImageMessage message = await getMessage;
 
-        byte[] imageData = Convert.FromBase64String(message.Base64Data);
+        byte[] imageData = Convert.FromBase64String(message.Base64Data ?? "");
         Assert.Equal(bytes.Length, imageData.Length);
         Assert.Equal(bytes, imageData);
         Assert.Equal("test image", message.ImageName);
+    }
+
+    [Fact]
+    public async Task CanSetImage()
+    {
+        await using var table = new TableClient();
+        await table.StartAsync();
+        await using var client = new TableClient(userId: table.UserId);
+        await client.StartAsync();
+
+        Task<SetImageMessage> getMessage = table.WaitForTableMessage<SetImageMessage>();
+
+        Guid imageId = Guid.NewGuid();
+        await client.SetCurrentImage(imageId);
+        SetImageMessage message = await getMessage;
+
+        Assert.Equal(imageId, message.ImageId);
     }
 }
 
