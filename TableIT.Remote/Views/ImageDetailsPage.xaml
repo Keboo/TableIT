@@ -9,7 +9,7 @@
 
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="50"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -27,7 +27,7 @@
 
     <!--<Button Text="Foo" GridLayout.Row="0" />-->
 
-    <img:ImageContainer GridLayout.Row="1">
+    <img:ImageContainer GridLayout.Row="1" IsClippedToBounds="True">
       <skia:SKCanvasView x:Name="Canvas" PaintSurface="Canvas_PaintSurface" />
     </img:ImageContainer>
     <!--<ScrollView GridLayout.Row="0"
