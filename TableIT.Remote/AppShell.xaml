@@ -10,10 +10,13 @@
   </FlyoutItem>
   <FlyoutItem Title="Images">
     <Tab>
-      <ShellContent x:Name="ImagesShell"
-        ContentTemplate="{DataTemplate views:ControlPage}" />
+      <ShellContent x:Name="ImagesShell" />
     </Tab>
   </FlyoutItem>
+
+  <Shell.FlyoutFooter>
+    <Button Text="Disconnect" Clicked="DisconnectClicked"/>
+  </Shell.FlyoutFooter>
   <!--<FlyoutItem Title="Maps">
     <Tab>
       <ShellContent ContentTemplate="{DataTemplate views:MapsPage}" />

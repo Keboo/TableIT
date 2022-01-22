@@ -2,6 +2,7 @@
 using Microsoft.Maui.Essentials;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
+using System.Threading.Tasks;
 using TableIT.Core;
 
 namespace TableIT.Remote
@@ -49,6 +50,15 @@ namespace TableIT.Remote
                 UserId = userId;
                 Client = null;
             }
+        }
+
+        public async Task Disconnect()
+        {
+            if (Client is { } client)
+            {
+                await client.DisposeAsync();
+            }
+            Client = null;
         }
 
         public bool IsConnected => Client?.ConnectionState == HubConnectionState.Connected;

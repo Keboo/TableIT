@@ -256,7 +256,7 @@ namespace TableIT.Core
             return new string(letters);
         }
 
-        ValueTask IAsyncDisposable.DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             return _connection.DisposeAsync();
         }

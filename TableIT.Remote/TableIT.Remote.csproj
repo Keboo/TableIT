@@ -67,6 +67,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\DisconnectPage.xaml.cs">
+	    <DependentUpon>DisconnectPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ConnectPage.xaml.cs">
 	    <DependentUpon>ConnectPage.xaml</DependentUpon>
 	  </Compile>
@@ -79,6 +82,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\DisconnectPage.xaml">
+	    <SubType>Designer</SubType>
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ConnectPage.xaml">
 	    <SubType>Designer</SubType>
 	    <Generator>MSBuild:Compile</Generator>
