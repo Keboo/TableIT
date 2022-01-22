@@ -26,6 +26,15 @@ namespace TableIT.Core
             });
         }
 
+        public static async Task<bool> PingTable(this TableClient client, CancellationToken token)
+        {
+            if (await client.SendRequestAsync<TablePingRequest, TablePingResponse>(new TablePingRequest(), token) is not null)
+            {
+                return true;
+            }
+            return false;
+        }
+
         private static async Task SendTableMessage<TMessage>(this TableClient client, TMessage message) 
             => await client.SendAsync("tablemessage", message);
 

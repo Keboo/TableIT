@@ -1,13 +1,18 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using TableIT.Core;
+using TableIT.Remote.Messages;
 
 namespace TableIT.Remote.ViewModels
 {
     public class ConnectPageViewModel : ObservableObject
     {
         public TableClientManager ClientManager { get; }
+        public IMessenger Messenger { get; }
         public IRelayCommand ConnectCommand { get; }
 
         private bool _isConnecting;
@@ -31,10 +36,11 @@ namespace TableIT.Remote.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
-        public ConnectPageViewModel(TableClientManager clientManager)
+        public ConnectPageViewModel(TableClientManager clientManager, IMessenger messenger)
         {
             ConnectCommand = new AsyncRelayCommand(OnConnect);
             ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
+            Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             UserId = clientManager.UserId;
         }
 
@@ -54,6 +60,16 @@ namespace TableIT.Remote.ViewModels
             try
             {
                 await client.StartAsync();
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                if (await client.PingTable(cts.Token))
+                {
+                    Messenger.Send(new TableConnected());
+                }
+                else
+                {
+                    ErrorMessage = $"Failed to find a table with id {userId}";
+                }
             }
             catch (Exception ex)
             {

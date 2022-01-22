@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
 using Xunit;
@@ -148,6 +149,41 @@ public class TableClientTests
         SetImageMessage message = await getMessage;
 
         Assert.Equal(imageId, message.ImageId);
+    }
+
+    [Fact]
+    public async Task CanPingTable_WithExistingTable()
+    {
+        await using var table = new TableClient();
+        await table.StartAsync();
+        await using var client = new TableClient(userId: table.UserId);
+        await client.StartAsync();
+
+        table.Handle<TablePingRequest, TablePingResponse>(message =>
+        {
+            return Task.FromResult<TablePingResponse?>(new TablePingResponse());
+        });
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromSeconds(1));
+        bool ack = await client.PingTable(cts.Token);
+
+        Assert.True(ack);
+    }
+
+    [Fact]
+    public async Task CanPingTable_NoTable()
+    {
+        await using var table = new TableClient();
+        await table.StartAsync();
+        await using var client = new TableClient(userId: table.UserId);
+        await client.StartAsync();
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromSeconds(1));
+        bool ack = await client.PingTable(cts.Token);
+
+        Assert.False(ack);
     }
 }
 

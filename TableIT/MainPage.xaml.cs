@@ -150,6 +150,11 @@ namespace TableIT
                     return response;
                 });
 
+                _client.Handle<TablePingRequest, TablePingResponse>(message =>
+                {
+                    return Task.FromResult<TablePingResponse?>(new TablePingResponse());
+                });
+
                 await _client.StartAsync();
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>

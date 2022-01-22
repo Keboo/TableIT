@@ -1,12 +1,13 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using TableIT.Remote.Messages;
 using TableIT.Remote.Views;
 using Application = Microsoft.Maui.Controls.Application;
 
 namespace TableIT.Remote
 {
-    public partial class App : Application, IRecipient<TableClientConnectionStateChanged>
+    public partial class App : Application, IRecipient<TableConnected>
     {
         public App(AppShell appShell, ConnectPage connectPage, IMessenger messenger)
         {
@@ -30,10 +31,9 @@ namespace TableIT.Remote
 
         public AppShell AppShell { get; }
 
-        public void Receive(TableClientConnectionStateChanged message)
+        public void Receive(TableConnected message)
         {
-            if (message.IsConnected &&
-                MainPage is ConnectPage)
+            if (MainPage is ConnectPage)
             {
                 MainPage = AppShell;
             }
