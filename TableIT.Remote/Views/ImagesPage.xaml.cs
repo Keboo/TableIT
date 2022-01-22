@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using TableIT.Remote.ViewModels;
+using System.Threading.Tasks;
 
 namespace TableIT.Remote.Views
 {
@@ -11,6 +12,12 @@ namespace TableIT.Remote.Views
         {
             BindingContext = ViewModel = viewModel;
             InitializeComponent();
+            ViewModel.DisplayPrompt += ViewModel_DisplayPrompt;
+        }
+
+        private Task<string?> ViewModel_DisplayPrompt()
+        {
+            return DisplayPromptAsync("Image name", "Enter the name of the image");
         }
 
         protected override async void OnAppearing()

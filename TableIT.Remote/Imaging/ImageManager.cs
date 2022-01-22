@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core;
 
@@ -34,7 +35,7 @@ namespace TableIT.Remote.Imaging
         ValueTask<RemoteImage?> FindImage(Guid imageId);
         Task<IReadOnlyList<RemoteImage>> LoadImages(bool forceRefresh = false);
         Task<RemoteImage> LoadImage(RemoteImage image);
-        Task<RemoteImage> LoadThumbnailImage(RemoteImage image);
+        Task<RemoteImage> LoadThumbnailImage(RemoteImage image, CancellationToken token);
     }
 
 
@@ -77,7 +78,7 @@ namespace TableIT.Remote.Imaging
             return image;
         }
 
-        public async Task<RemoteImage> LoadThumbnailImage(RemoteImage image)
+        public async Task<RemoteImage> LoadThumbnailImage(RemoteImage image, CancellationToken token)
         {
             if (Images.TryGetValue(image.ImageId, out RemoteImage? existing))
             {
@@ -85,7 +86,7 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Thumbnail is null && ClientManager.GetClient() is { } client)
             {
-                byte[] data = await client.GetImage(image.ImageId, width:50);
+                byte[] data = await client.GetImage(image.ImageId, width:50, token: token);
                 image.SetThumbnailData(data);
             }
             return image;

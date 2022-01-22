@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Remote.Imaging;
@@ -16,6 +17,8 @@ namespace TableIT.Remote.ViewModels
 {
     public class ImagesPageViewModel : ObservableObject
     {
+        public event Func<Task<string?>>? DisplayPrompt;
+
         public IRelayCommand ImportCommand { get; }
         public IRelayCommand RefreshCommand { get; }
         public TableClientManager ClientManager { get; }
@@ -55,13 +58,15 @@ namespace TableIT.Remote.ViewModels
                 .Select(x => new ImageViewModel(x))
                 .ToList();
 
-            await Task.WhenAll(Images.Select(async x =>
+            foreach(var image in Images)
             {
-                if (await ImageManager.LoadThumbnailImage(x.Data) is { } remoteImage)
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(3));
+                if (await ImageManager.LoadThumbnailImage(image.Data, cts.Token) is { } remoteImage)
                 {
-                    x.Image = remoteImage.Thumbnail;
+                    image.Image = remoteImage.Thumbnail;
                 }
-            }));
+            }
             IsLoading = false;
         }
 
@@ -69,9 +74,15 @@ namespace TableIT.Remote.ViewModels
         {
             if (await PickAndShow(PickOptions.Images) is { } fileResult)
             {
+                string? fileName = null;
+                if (DisplayPrompt is { } displayPrompt)
+                {
+                    fileName = await displayPrompt();
+                }
+                fileName ??= fileResult.FileName;
                 using Stream stream = await fileResult.OpenReadAsync();
                 //TODO: prompt for name
-                await ClientManager.GetClient().SendImage(fileResult.FileName, stream);
+                await ClientManager.GetClient().SendImage(fileName, stream);
             }
         }
 
