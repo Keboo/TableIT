@@ -4,13 +4,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using TableIT.Core;
 
 namespace TableIT.Remote.Imaging
 {
-    public record RemoteImage(Guid ImageId, string Name)
+    public record RemoteImage(string ImageId, string Name)
     {
         public ImageSource? Thumbnail { get; private set; }
         public ImageSource? Image { get; private set; }
@@ -32,16 +30,16 @@ namespace TableIT.Remote.Imaging
 
     public interface IImageManager
     {
-        ValueTask<RemoteImage?> FindImage(Guid imageId);
+        ValueTask<RemoteImage?> FindImage(string imageId);
         Task<IReadOnlyList<RemoteImage>> LoadImages(bool forceRefresh = false);
         Task<RemoteImage> LoadImage(RemoteImage image);
-        Task<RemoteImage> LoadThumbnailImage(RemoteImage image, CancellationToken token);
+        Task<RemoteImage> LoadThumbnailImage(RemoteImage image);
     }
 
 
     public class ImageManager : IImageManager
     {
-        private ConcurrentDictionary<Guid, RemoteImage> Images { get; } = new();
+        private ConcurrentDictionary<string, RemoteImage> Images { get; } = new();
 
         public ImageManager(TableClientManager tableClientManager)
         {
@@ -50,7 +48,7 @@ namespace TableIT.Remote.Imaging
 
         public TableClientManager ClientManager { get; }
 
-        public async ValueTask<RemoteImage?> FindImage(Guid imageId)
+        public async ValueTask<RemoteImage?> FindImage(string imageId)
         {
             if (Images.TryGetValue(imageId, out RemoteImage? image))
             {
@@ -78,7 +76,7 @@ namespace TableIT.Remote.Imaging
             return image;
         }
 
-        public async Task<RemoteImage> LoadThumbnailImage(RemoteImage image, CancellationToken token)
+        public async Task<RemoteImage> LoadThumbnailImage(RemoteImage image)
         {
             if (Images.TryGetValue(image.ImageId, out RemoteImage? existing))
             {
@@ -86,7 +84,7 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Thumbnail is null && ClientManager.GetClient() is { } client)
             {
-                byte[] data = await client.GetImage(image.ImageId, width:50, token: token);
+                byte[] data = await client.GetImage(image.ImageId, width:50);
                 image.SetThumbnailData(data);
             }
             return image;

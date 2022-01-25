@@ -4,6 +4,6 @@ namespace TableIT.Core.Messages
 {
     public class SetImageMessage
     {
-        public Guid ImageId { get; set; }
+        public string ImageId { get; set; }
     }
 }

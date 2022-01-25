@@ -1,10 +1,13 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TableIT.Remote.ViewModels"
+             xmlns:converters="clr-namespace:TableIT.Remote.Converters"
              x:Class="TableIT.Remote.Views.ImagesPage"
              x:DataType="vm:ImagesPageViewModel"
              BackgroundColor="{DynamicResource Background}">
-
+  <ContentPage.Resources>
+    <converters:NotNegativeValueConverter x:Key="NotNegativeValueConverter" />
+  </ContentPage.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/>
@@ -13,19 +16,44 @@
 
     <Button Text="Import"
             Command="{Binding ImportCommand}" 
-            GridLayout.Row="0" />
+            GridLayout.Row="0" 
+            Margin="10"/>
 
-    <ListView ItemsSource="{Binding Images}" GridLayout.Row="1" 
+    <ListView ItemsSource="{Binding Images}" 
+              GridLayout.Row="1" 
               RefreshCommand="{Binding RefreshCommand}"
               IsPullToRefreshEnabled="True"
               SelectionMode="None"
               IsRefreshing="{Binding IsLoading}"
-              ItemTapped="OnItemTapped">
+              ItemTapped="OnItemTapped"
+              >
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ImageViewModel">
-          <ImageCell ImageSource="{Binding Image}" 
+          <ViewCell>
+            <!--<ViewCell.ContextActions>
+              <MenuItem Text="Delete" 
+                        Command="{Binding BindingContext.DeleteCommand, Source={x:RelativeSource AncestorType=ListView}}" 
+                        IsDestructive="True" />
+            </ViewCell.ContextActions>-->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <Image Source="{Binding Image}" Margin="5"/>
+              <Label Text="{Binding Name}" GridLayout.Column="1" 
+                     VerticalOptions="Center"
+                     TextColor="{DynamicResource Foreground}"/>
+              <ProgressBar IsVisible="{Binding Progress, Converter={StaticResource NotNegativeValueConverter}}"
+                           Progress="{Binding Progress}"
+                           GridLayout.Column="0"
+                           GridLayout.ColumnSpan="2"
+                           VerticalOptions="EndAndExpand"/>
+            </Grid>
+          </ViewCell>
+          <!--<ImageCell ImageSource="{Binding Image}" 
                      Text="{Binding Name}" 
-                     TextColor="{DynamicResource Foreground}" />
+                     TextColor="{DynamicResource Foreground}"  />-->
         </DataTemplate>
       </ListView.ItemTemplate>
     </ListView>

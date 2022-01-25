@@ -59,7 +59,7 @@ namespace TableIT.Remote.ViewModels
         public async void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             IsLoading = true;
-            if (query.TryGetQueryParamter("imageId", out Guid imageId) &&
+            if (query.TryGetQueryParamter("imageId", out string? imageId) &&
                 await ImageManager.FindImage(imageId) is { } remoteImage)
             {
                 RemoteImage = await ImageManager.LoadImage(remoteImage);

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace TableIT.Core.Messages;
 
-namespace TableIT.Core.Messages
-{
-    public class TablePingRequest
-    { }
+public class TablePingRequest
+{ }
 
-    public class TablePingResponse
-    { }
-}
+public class TablePingResponse
+{ }

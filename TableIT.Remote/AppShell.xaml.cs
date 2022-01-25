@@ -50,7 +50,10 @@ namespace TableIT.Remote
                 ServiceProvider = serviceProvider;
             }
 
-            public override Element GetOrCreate() => ServiceProvider.GetRequiredService<T>(); 
+            public override Element GetOrCreate() => ServiceProvider.GetRequiredService<T>();
+
+            public override Element GetOrCreate(IServiceProvider services)
+                => (services ?? ServiceProvider).GetRequiredService<T>();
         }
     }
 }

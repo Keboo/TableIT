@@ -1,6 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
 using TableIT.Remote.ViewModels;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
+using System;
 
 namespace TableIT.Remote.Views
 {
@@ -17,6 +19,10 @@ namespace TableIT.Remote.Views
 
         private Task<string?> ViewModel_DisplayPrompt()
         {
+            if (Dispatcher.IsDispatchRequired)
+            {
+                return Dispatcher.DispatchAsync(ViewModel_DisplayPrompt);
+            }
             return DisplayPromptAsync("Image name", "Enter the name of the image");
         }
 

@@ -60,9 +60,7 @@ namespace TableIT.Remote.ViewModels
             try
             {
                 await client.StartAsync();
-                using var cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
-                if (await client.PingTable(cts.Token))
+                if (await client.PingTable())
                 {
                     Messenger.Send(new TableConnected());
                 }

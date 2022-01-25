@@ -2,7 +2,7 @@
 
 namespace TableIT.Remote.Messages
 {
-    public record ImageSelected(Guid ImageId)
+    public record ImageSelected(string ImageId)
     {
     }
 }

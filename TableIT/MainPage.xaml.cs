@@ -51,7 +51,7 @@ namespace TableIT
             try
             {
 #if DEBUG
-                _client = new TableClient(userId: "DEBUG1");
+                _client = new TableClient(userId: "DEBUG2");
 #else
                 _client = new TableClient();
 #endif
@@ -90,10 +90,12 @@ namespace TableIT
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     () =>
                     {
-                        Status.Text = $"Loading image {message.ImageName}";
+                        Status.Text = $"Loading image {message.ImageId}";
                     });
-                    byte[] imageData = Convert.FromBase64String(message.Base64Data);
-                    await _imageManager.AddImage(message.ImageName ?? "<none>", imageData, message.ImageId);
+                    if (!_imageManager.HasImage(message.ImageId, message.Version))
+                    {
+                        await _client.GetImage(message.ImageId);
+                    }
                 });
 
                 _client.RegisterTableMessage<SetImageMessage>(async message =>
@@ -132,27 +134,32 @@ namespace TableIT
                     return response;
                 });
 
-                _client.Handle<GetImageRequest, GetImageResponse>(async message =>
+                //_client.Handle<GetImageRequest, GetImageResponse>(async message =>
+                //{
+                //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                //    () =>
+                //    {
+                //        Status.Text = $"Getting image {message.ImageId}";
+                //    });
+                //    var response = new GetImageResponse();
+                //    await foreach (Image image in _imageManager.GetImages())
+                //    {
+                //        if (image.Id == message.ImageId)
+                //        {
+                //            response.Base64Data = Convert.ToBase64String(await image.GetBytes(message.Width, message.Height));
+                //        }
+                //    }
+                //    return response;
+                //});
+
+                _client.Handle<TablePingRequest, TablePingResponse>(async message =>
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     () =>
                     {
-                        Status.Text = $"Getting image {message.ImageId}";
+                        Status.Text = $"New client connected";
                     });
-                    var response = new GetImageResponse();
-                    await foreach (Image image in _imageManager.GetImages())
-                    {
-                        if (image.Id == message.ImageId)
-                        {
-                            response.Base64Data = Convert.ToBase64String(await image.GetBytes(message.Width, message.Height));
-                        }
-                    }
-                    return response;
-                });
-
-                _client.Handle<TablePingRequest, TablePingResponse>(message =>
-                {
-                    return Task.FromResult<TablePingResponse?>(new TablePingResponse());
+                    return new TablePingResponse();
                 });
 
                 await _client.StartAsync();

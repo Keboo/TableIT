@@ -35,10 +35,10 @@ namespace TableIT.Remote
 
         private void ClientConnectionStateChanged(object? sender, EventArgs e)
         {
-            bool isConnected = Client?.ConnectionState == HubConnectionState.Connected;
+            bool isConnected = IsConnected;
             if (isConnected)
             {
-                Preferences.Set(LasUserIdKey, Client.UserId);
+                Preferences.Set(LasUserIdKey, Client!.UserId);
             }
             Messenger.Send(new TableClientConnectionStateChanged(isConnected));
         }

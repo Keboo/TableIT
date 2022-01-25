@@ -1,10 +1,12 @@
 ﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,16 +23,12 @@ namespace TableIT.Remote.ViewModels
 
         public IRelayCommand ImportCommand { get; }
         public IRelayCommand RefreshCommand { get; }
+        public IAsyncRelayCommand DeleteCommand { get; }
         public TableClientManager ClientManager { get; }
         public IImageManager ImageManager { get; }
         public IMessenger Messenger { get; }
-
-        private IReadOnlyList<ImageViewModel>? _images;
-        public IReadOnlyList<ImageViewModel>? Images
-        {
-            get => _images;
-            set => SetProperty(ref _images, value);
-        }
+        public IDispatcher Dispatcher { get; }
+        public ObservableCollection<ImageViewModel> Images { get; } = new();
 
         private bool _isLoading;
         public bool IsLoading
@@ -41,53 +39,90 @@ namespace TableIT.Remote.ViewModels
 
         public ImagesPageViewModel(
             TableClientManager clientManager,
-            IImageManager imageManager, 
-            IMessenger messenger)
+            IImageManager imageManager,
+            IMessenger messenger, 
+            IDispatcher dispatcher)
         {
             ImportCommand = new AsyncRelayCommand(OnImport);
             RefreshCommand = new AsyncRelayCommand(LoadImages);
+            DeleteCommand = new AsyncRelayCommand<ImageViewModel>(DeleteImage);
             ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
             ImageManager = imageManager ?? throw new ArgumentNullException(nameof(imageManager));
             Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+            Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         public async Task LoadImages()
         {
             IsLoading = true;
-            Images = (await ImageManager.LoadImages(true))
+
+            var images = (await ImageManager.LoadImages(true))
                 .Select(x => new ImageViewModel(x))
                 .ToList();
-
-            foreach(var image in Images)
+            Images.Clear();
+            foreach (var image in images)
             {
-                using var cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromSeconds(3));
-                if (await ImageManager.LoadThumbnailImage(image.Data, cts.Token) is { } remoteImage)
-                {
-                    image.Image = remoteImage.Thumbnail;
-                }
+                Images.Add(image);
+            }
+
+            foreach (ImageViewModel image in images)
+            {
+                await LoadThumbnail(image);
             }
             IsLoading = false;
         }
 
+        private async Task LoadThumbnail(ImageViewModel image)
+        {
+            if (await ImageManager.LoadThumbnailImage(image.Data) is { } remoteImage)
+            {
+                image.Image = remoteImage.Thumbnail;
+            }
+        }
+
         private async Task OnImport()
         {
-            if (await PickAndShow(PickOptions.Images) is { } fileResult)
+            try
             {
-                string? fileName = null;
-                if (DisplayPrompt is { } displayPrompt)
+                if (await PickAndShow(PickOptions.Images) is { } fileResult)
                 {
-                    fileName = await displayPrompt();
+                    string? imageName = null;
+                    if (DisplayPrompt is { } displayPrompt)
+                    {
+                        imageName = await displayPrompt();
+                    }
+                    imageName ??= fileResult.FileName;
+                    string imageId = Guid.NewGuid().ToString();
+                    var imageViewModel = new ImageViewModel(new RemoteImage(imageId, imageName));
+                    Images.Add(imageViewModel);
+                    using Stream stream = await fileResult.OpenReadAsync();
+                    Progress<double> progres = new(x => imageViewModel.Progress = x);
+                    if (ClientManager.GetClient() is { } client)
+                    {
+                        await client.SendImage(imageName, stream, imageId, progres);
+                        await LoadThumbnail(imageViewModel);
+                    }
+                    imageViewModel.Progress = -1;
                 }
-                fileName ??= fileResult.FileName;
-                using Stream stream = await fileResult.OpenReadAsync();
-                //TODO: prompt for name
-                await ClientManager.GetClient().SendImage(fileName, stream);
+            }
+            catch(Exception)
+            {
+
             }
         }
 
         public void OnItemSelected(ImageViewModel imageViewModel)
             => Messenger.Send(new ImageSelected(imageViewModel.Data.ImageId));
+
+        private async Task DeleteImage(ImageViewModel? image)
+        {
+            if (image is null) return;
+            if (ClientManager.GetClient() is { } client &&
+                await client.DeleteImage(image.Data.ImageId))
+            {
+                Images.Remove(image);
+            }
+        }
 
         private static async Task<FileResult?> PickAndShow(PickOptions options)
         {
