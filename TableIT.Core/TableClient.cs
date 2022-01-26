@@ -177,16 +177,22 @@ public partial class TableClient : IAsyncDisposable
 
     public async Task<IReadOnlyList<ImageData>> GetImages()
     {
-        string? response = await HttpClient.GetStringAsync("resources/");
-        if (response is not null &&
-            JsonSerializer.Deserialize<Resource[]>(response) is Resource[] resources)
+        try
         {
-            return resources.Select(r => new ImageData
+            string? response = await HttpClient.GetStringAsync("resources/");
+            if (response is not null &&
+                JsonSerializer.Deserialize<Resource[]>(response) is Resource[] resources)
             {
-                Id = r.ResourceId,
-                Name = r.DisplayName
-            }).ToList();
+                return resources.Select(r => new ImageData
+                {
+                    Id = r.ResourceId,
+                    Name = r.DisplayName
+                }).ToList();
+            }
         }
+        catch(Exception)
+        { }
+        
         return Array.Empty<ImageData>();
     }
 

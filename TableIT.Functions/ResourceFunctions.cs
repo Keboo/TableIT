@@ -33,7 +33,7 @@ namespace TableIT.Functions
 
         [FunctionName("ListResources")]
         public static IActionResult ListResources(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "resources")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "list/resources")] HttpRequest req,
             [StorageAccount("BlobConnection")] CloudStorageAccount account,
             ILogger log)
         {
