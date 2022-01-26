@@ -11,11 +11,12 @@ using System.Threading.Tasks;
 
 namespace TableIT.Functions
 {
+    
     public static class ResourceFunctions
     {
         [FunctionName("Resource")]
         public static async Task<IActionResult> GetResource(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "resources/{resourceId}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "resources/{resourceId}")] HttpRequest req,
             [Blob("resources/{resourceId}", FileAccess.Read, Connection = "BlobConnection")] CloudBlob blob,
             ILogger log)
         {
@@ -33,7 +34,7 @@ namespace TableIT.Functions
 
         [FunctionName("ListResources")]
         public static IActionResult ListResources(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "list/resources")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "list/resources")] HttpRequest req,
             [StorageAccount("BlobConnection")] CloudStorageAccount account,
             ILogger log)
         {
