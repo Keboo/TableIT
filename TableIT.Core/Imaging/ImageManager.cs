@@ -31,12 +31,10 @@ namespace TableIT.Core.Imaging
 
         internal async Task<Stream?> Get(string id, int? width, int? height)
         {
-            CacheResource? cached;
             try
             {
                 await ResourcesLock.WaitAsync();
-                if (Resources.TryGetValue(id, out cached) &&
-                    await Persistence.Get(id) is { } dataStream)
+                if (await Persistence.Get(id) is { } dataStream)
                 {
                     return dataStream;
                 }
@@ -49,21 +47,18 @@ namespace TableIT.Core.Imaging
             if (response.IsSuccessStatusCode)
             {
                 Stream dataStream = await response.Content.ReadAsStreamAsync();
-                if (cached is not null)
+                string? version = response.Headers.ETag.Tag;
+                try
                 {
-                    //TODO: response.Headers.ETag;
-                    try
-                    {
-                        await ResourcesLock.WaitAsync();
-                        await Persistence.Save(id, dataStream);
-                    }
-                    finally
-                    {
-                        ResourcesLock.Release();
-                    }
+                    await ResourcesLock.WaitAsync();
+                    await Persistence.Save(id, dataStream);
+                    Resources[id] = new CacheResource(id, version);
+                    return await Persistence.Get(id);
                 }
-                return dataStream;
-
+                finally
+                {
+                    ResourcesLock.Release();
+                }
             }
             return null;
         }

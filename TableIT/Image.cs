@@ -22,7 +22,7 @@ public class Image
 
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name => File.DisplayName;
-    public string Version { get; }
+    public string? Version { get; }
     public StorageFile File { get; }
 
     internal async Task<ImageSource> GetImageSource()

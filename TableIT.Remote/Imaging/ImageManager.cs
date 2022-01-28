@@ -15,10 +15,17 @@ namespace TableIT.Remote.Imaging
 
         internal async Task SetImageData(Stream data)
         {
-            using var ms = new MemoryStream((int)data.Length);
-            await data.CopyToAsync(ms);
-            ms.Position = 0;
-            Image = ms.ToArray();
+            if (data is MemoryStream stream)
+            {
+                Image = stream.ToArray();
+            }
+            else
+            {
+                using var ms = new MemoryStream((int)data.Length);
+                await data.CopyToAsync(ms);
+                ms.Position = 0;
+                Image = ms.ToArray();
+            }
         }
 
         internal async Task SetThumbnailData(Stream data)

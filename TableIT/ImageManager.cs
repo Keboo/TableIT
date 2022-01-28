@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TableIT.Core;
+using TableIT.Core.Imaging;
 
 namespace TableIT;
 
@@ -13,15 +14,23 @@ internal class ImageManager
     private Image? Current { get; set; }
     private List<Image> Images { get; } = new();
     private TableClient Client { get; }
+    public IResourcePersistence Persistence { get; }
 
-    public ImageManager(TableClient client)
+    public ImageManager(TableClient client, IResourcePersistence persistence)
     {
         Client = client;
+        Persistence = persistence;
     }
 
-    public async Task Load()
+    public async Task<Stream?> Load()
     {
         Images.Clear();
+        IList<ResourceData> data = await Persistence.GetAll();
+        if (data.FirstOrDefault(x => x.IsCurrent) is { } current)
+        {
+            return await Client.GetImage(current.Id);
+        }
+        return null;
         //TODO: Load last image if there was one
 
         //try

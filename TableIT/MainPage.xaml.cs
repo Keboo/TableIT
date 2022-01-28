@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core;
+using TableIT.Core.Imaging;
 using TableIT.Core.Messages;
 using Windows.Storage.Streams;
 using Windows.UI.Core;
@@ -18,6 +19,7 @@ namespace TableIT
     {
         private ImageManager? _imageManager;
         private TableClient? _client;
+        private IResourcePersistence _persistence = new ResourcePersistence();
         public MainPage()
         {
             InitializeComponent();
@@ -32,17 +34,24 @@ namespace TableIT
                 });
                 if (_client is { } client)
                 {
-                    _imageManager = new(client);
-                    await _imageManager.Load();
-                    if (await _imageManager.GetCurrentImage() is { } image)
+                    _imageManager = new(client, _persistence);
+                    if (await _imageManager.Load() is { } imageStream)
                     {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                         async () =>
                         {
-                            Image.Source = await image.GetImageSource();
+                            using var _ = imageStream;
+                            BitmapImage bitmapImage = new();
+                            await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
+                            Image.Source = bitmapImage;
                         });
                     }
                 }
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    Status.Text = "Done";
+                });
 
             });
 
@@ -58,7 +67,7 @@ namespace TableIT
             try
             {
 #if DEBUG
-                _client = new TableClient(new ResourcePersistence(), userId: "DEBUG2");
+                _client = new TableClient(_persistence, userId: "DEBUG2");
 #else
                 _client = new TableClient();
 #endif
@@ -106,6 +115,7 @@ namespace TableIT
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                         async () =>
                         {
+                            using var _ = imageStream;
                             BitmapImage bitmapImage = new();
                             await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
                             Image.Source = bitmapImage;
