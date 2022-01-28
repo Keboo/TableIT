@@ -1,10 +1,13 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
+using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace TableIT
 {
@@ -13,7 +16,7 @@ namespace TableIT
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private readonly ImageManager _imageManager = new();
+        private ImageManager? _imageManager;
         private TableClient? _client;
         public MainPage()
         {
@@ -21,22 +24,26 @@ namespace TableIT
 
             Task.Run(async () =>
             {
+                await ConnectToServer();
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>
                 {
                     Status.Text = "Loading images...";
                 });
-                await _imageManager.Load();
-                if (await _imageManager.GetCurrentImage() is { } image)
+                if (_client is { } client)
                 {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    async () =>
+                    _imageManager = new(client);
+                    await _imageManager.Load();
+                    if (await _imageManager.GetCurrentImage() is { } image)
                     {
-                        Image.Source = await image.GetImageSource();
-                    });
+                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                        async () =>
+                        {
+                            Image.Source = await image.GetImageSource();
+                        });
+                    }
                 }
-                
-                await ConnectToServer();
+
             });
 
         }
@@ -51,7 +58,7 @@ namespace TableIT
             try
             {
 #if DEBUG
-                _client = new TableClient(userId: "DEBUG2");
+                _client = new TableClient(new ResourcePersistence(), userId: "DEBUG2");
 #else
                 _client = new TableClient();
 #endif
@@ -92,47 +99,55 @@ namespace TableIT
                     {
                         Status.Text = $"Loading image {message.ImageId}";
                     });
-                    if (!_imageManager.HasImage(message.ImageId, message.Version))
-                    {
-                        await _client.GetImage(message.ImageId);
-                    }
-                });
 
-                _client.RegisterTableMessage<SetImageMessage>(async message =>
-                {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    () =>
-                    {
-                        Status.Text = $"Setting image {message.ImageId}";
-                    });
-                    if (await _imageManager.SetCurrentImage(message.ImageId) is { } image)
+                    if (_imageManager is { } imageManager &&
+                        await imageManager.GetImage(message.ImageId) is { } imageStream)
                     {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                         async () =>
                         {
-                            Image.Source = await image.GetImageSource();
+                            BitmapImage bitmapImage = new();
+                            await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
+                            Image.Source = bitmapImage;
                         });
                     }
                 });
 
-                _client.Handle<ListImagesRequest, ListImagesResponse>(async message =>
-                {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    () =>
-                    {
-                        Status.Text = $"Listing images";
-                    });
-                    var response = new ListImagesResponse();
-                    await foreach (Image image in _imageManager.GetImages())
-                    {
-                        response.Images.Add(new ImageData
-                        {
-                            Id = image.Id,
-                            Name = image.Name 
-                        });
-                    }
-                    return response;
-                });
+                //_client.RegisterTableMessage<SetImageMessage>(async message =>
+                //{
+                //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                //    () =>
+                //    {
+                //        Status.Text = $"Setting image {message.ImageId}";
+                //    });
+                //    if (await _imageManager.SetCurrentImage(message.ImageId) is { } image)
+                //    {
+                //        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                //        async () =>
+                //        {
+                //            Image.Source = await image.GetImageSource();
+                //        });
+                //    }
+                //});
+
+                //_client.Handle<ListImagesRequest, ListImagesResponse>(async message =>
+                //{
+                //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                //    () =>
+                //    {
+                //        Status.Text = $"Listing images";
+                //    });
+                //    var response = new ListImagesResponse();
+                //    await foreach (Image image in _imageManager.GetImages())
+                //    {
+                //        response.Images.Add(new ImageData
+                //        {
+                //            Id = image.Id,
+                //            Name = image.Name 
+                //        });
+                //    }
+                //    return response;
+                //});
 
                 //_client.Handle<GetImageRequest, GetImageResponse>(async message =>
                 //{

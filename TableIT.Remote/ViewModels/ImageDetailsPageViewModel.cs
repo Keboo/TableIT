@@ -54,7 +54,7 @@ namespace TableIT.Remote.ViewModels
                 }
             }
         }
-        public byte[]? Image => RemoteImage?.ImageData;
+        public byte[]? Image => RemoteImage?.Image;
 
         public async void ApplyQueryAttributes(IDictionary<string, object> query)
         {

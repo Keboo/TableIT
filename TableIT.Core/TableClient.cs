@@ -2,11 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using TableIT.Core.Imaging;
 using TableIT.Core.Messages;
 
 namespace TableIT.Core;
@@ -16,22 +19,19 @@ public partial class TableClient : IAsyncDisposable
     public event EventHandler? ConnectionStateChanged;
     private readonly HubConnection _connection;
 
-    private HttpClient HttpClient { get; }
+    private ResourceManager ResourceManager { get; }
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(5);
 
     public string UserId { get; }
 
-    public TableClient(string? endpoint = null, string? userId = null)
+    public TableClient(IResourcePersistence resourcePersistence, string? endpoint = null, string? userId = null)
     {
         UserId = userId ?? GenerateUserId();
-        endpoint ??= "https://tableitfunctions.azurewebsites.net/api";
-        HttpClient = new()
-        {
-            BaseAddress = new Uri(endpoint)
-        };
+        endpoint ??= "https://tableitfunctions.azurewebsites.net";
+        ResourceManager = new ResourceManager(resourcePersistence ?? throw new ArgumentNullException(nameof(resourcePersistence)), endpoint);
 
         _connection = new HubConnectionBuilder()
-            .WithUrl(endpoint, options =>
+            .WithUrl(endpoint + "/api", options =>
             {
                 options.Headers["Authorization"] = ServiceUtils.GenerateAccessToken(UserId);
             })
@@ -176,43 +176,12 @@ public partial class TableClient : IAsyncDisposable
     }
 
     public async Task<IReadOnlyList<ImageData>> GetImages()
-    {
-        try
-        {
-            string? response = await HttpClient.GetStringAsync("resources/");
-            if (response is not null &&
-                JsonSerializer.Deserialize<Resource[]>(response) is Resource[] resources)
-            {
-                return resources.Select(r => new ImageData
-                {
-                    Id = r.ResourceId,
-                    Name = r.DisplayName
-                }).ToList();
-            }
-        }
-        catch(Exception)
-        { }
-        
-        return Array.Empty<ImageData>();
-    }
+        => await ResourceManager.GetImages();
 
-    public async Task<byte[]> GetImage(
+    public async Task<Stream?> GetImage(
         string imageId,
         int? width = null,
-        int? height = null)
-    {
-        var response = await HttpClient.GetAsync($"resources/{imageId}");
-        if (response.IsSuccessStatusCode)
-        {
-            
-            //response.Headers.ETag;
-        }
-        //if (response?.Base64Data is not null)
-        //{
-        //    return Convert.FromBase64String(response.Base64Data);
-        //}
-        return Array.Empty<byte>();
-    }
+        int? height = null) => await ResourceManager.Get(imageId, width, height);
 
     private async Task<bool> SendAsync(
         string methodName,
@@ -333,12 +302,5 @@ public partial class TableClient : IAsyncDisposable
 
             }
         }
-    }
-
-    private class Resource
-    {
-        public string? ResourceId { get; set; }
-        public string? DisplayName { get; set; }
-        public string? Version { get; set; }
     }
 }

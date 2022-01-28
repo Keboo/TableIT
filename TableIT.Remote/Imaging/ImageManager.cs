@@ -11,19 +11,21 @@ namespace TableIT.Remote.Imaging
     public record RemoteImage(string ImageId, string Name)
     {
         public ImageSource? Thumbnail { get; private set; }
-        public ImageSource? Image { get; private set; }
-        public byte[]? ImageData { get; private set; }
+        public byte[]? Image { get; private set; }
 
-        internal void SetImageData(byte[] data)
+        internal async Task SetImageData(Stream data)
         {
-            ImageData = data;
-            var ms = new MemoryStream(data);
-            Image = ImageSource.FromStream(() => ms);
+            using var ms = new MemoryStream((int)data.Length);
+            await data.CopyToAsync(ms);
+            ms.Position = 0;
+            Image = ms.ToArray();
         }
 
-        internal void SetThumbnailData(byte[] data)
+        internal async Task SetThumbnailData(Stream data)
         {
-            var ms = new MemoryStream(data);
+            var ms = new MemoryStream((int)data.Length);
+            await data.CopyToAsync(ms);
+            ms.Position = 0;
             Thumbnail = ImageSource.FromStream(() => ms);
         }
     }
@@ -70,8 +72,11 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Image is null && ClientManager.GetClient() is { } client)
             {
-                byte[] data = await client.GetImage(image.ImageId);
-                image.SetImageData(data);
+                Stream? imageData = await client.GetImage(image.ImageId);
+                if (imageData is not null)
+                {
+                    await image.SetImageData(imageData);
+                }
             }
             return image;
         }
@@ -84,8 +89,11 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Thumbnail is null && ClientManager.GetClient() is { } client)
             {
-                byte[] data = await client.GetImage(image.ImageId, width:50);
-                image.SetThumbnailData(data);
+                Stream? imageData = await client.GetImage(image.ImageId, width: 50);
+                if (imageData is not null)
+                {
+                    await image.SetThumbnailData(imageData);
+                }
             }
             return image;
         }

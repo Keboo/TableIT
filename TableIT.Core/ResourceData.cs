@@ -2,9 +2,12 @@
 
 public class ResourceData
 {
-    public string ResourceId { get; }
+    public string Id { get; }
     public string Version { get; }
-    public byte[] Data { get; }
 
-
+    public ResourceData(string id, string version)
+    {
+        Id = id;
+        Version = version;
+    }
 }

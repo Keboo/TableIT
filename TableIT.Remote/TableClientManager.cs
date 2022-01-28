@@ -4,6 +4,7 @@ using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Threading.Tasks;
 using TableIT.Core;
+using TableIT.Core.Imaging;
 
 namespace TableIT.Remote
 {
@@ -27,7 +28,8 @@ namespace TableIT.Remote
             var client = Client;
             if (client is null)
             {
-                client = Client = new TableClient(userId: UserId);
+                //TODO: real provider
+                client = Client = new TableClient(new MemoryResourcePersistence(), userId: UserId);
                 client.ConnectionStateChanged += ClientConnectionStateChanged;
             }
             return client;

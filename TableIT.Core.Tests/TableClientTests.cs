@@ -45,7 +45,7 @@ public class TableClientTests
         Assert.Equal(12_000, message.VerticalOffset);
     }
 
-    [Fact(Skip = "Needs update")]
+    [Fact]
     public async Task CanListImages()
     {
         await using var table = new TableClient();
@@ -53,28 +53,11 @@ public class TableClientTests
         await using var client = new TableClient(userId: table.UserId);
         await client.StartAsync();
 
-        string imageId = Guid.NewGuid().ToString();
-        string imageName = "test image name";
-        table.Handle<ListImagesRequest, ListImagesResponse>(message =>
-        {
-            return Task.FromResult<ListImagesResponse?>(new ListImagesResponse
-            {
-                Images = new()
-                {
-                    new ImageData
-                    {
-                        Id = imageId,
-                        Name = imageName
-                    }
-                }
-            });
-        });
-
         IReadOnlyList<ImageData> images = await client.GetImages();
 
-        Assert.Equal(1, images.Count);
-        Assert.Equal(imageId, images[0].Id);
-        Assert.Equal(imageName, images[0].Name);
+        Assert.True(images.Any());
+        Assert.False(string.IsNullOrWhiteSpace(images[0].Id));
+        Assert.False(string.IsNullOrWhiteSpace(images[0].Name));
     }
 
     [Fact(Skip = "Needs update")]

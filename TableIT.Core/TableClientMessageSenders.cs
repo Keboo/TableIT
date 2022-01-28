@@ -81,7 +81,8 @@ namespace TableIT.Core
 
         public static async Task SetCurrentImage(this TableClient client, string imageId)
         {
-            await client.SendTableMessage(new SetImageMessage
+            //TODO: Include version
+            await client.SendTableMessage(new LoadImageMessage
             {
                 ImageId = imageId,
             });
