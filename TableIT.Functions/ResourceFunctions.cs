@@ -6,6 +6,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace TableIT.Functions
 {
-    
+
     public static class ResourceFunctions
     {
         [FunctionName("Resource")]
@@ -22,7 +23,7 @@ namespace TableIT.Functions
             [Blob("resources/{resourceId}", FileAccess.Read, Connection = "BlobConnection")] CloudBlob blob,
             ILogger log)
         {
-            
+
             if (!await blob.ExistsAsync())
             {
                 return new NotFoundResult();
@@ -51,9 +52,9 @@ namespace TableIT.Functions
                     imageInfo = new SKImageInfo(width.Value, thumbnailHeight);
                 }
                 using var resized = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
-                using SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
-                var stream = resizedData.AsStream();
-                return new FileStreamResult(stream, blob.Properties.ContentType)
+                SKData resizedData = resized.Encode(SKEncodedImageFormat.Jpeg, 100);
+
+                return new FileStreamResult(resizedData.AsStream(true), blob.Properties.ContentType)
                 {
                     EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue(blob.Properties.ETag)
                 };
@@ -66,7 +67,7 @@ namespace TableIT.Functions
             };
             return result;
 
-            bool TryGetQueryParameter(string name, [NotNullWhen(true)]out int? value)
+            bool TryGetQueryParameter(string name, [NotNullWhen(true)] out int? value)
             {
                 if (!req.Query.TryGetValue(name, out var stringValue) ||
                     !int.TryParse(stringValue, out int intValue))
@@ -89,7 +90,7 @@ namespace TableIT.Functions
             var container = blobClient.GetContainerReference("resources");
 
             List<Resource> resources = new();
-            foreach(CloudBlob blob in container.ListBlobs(useFlatBlobListing:true, blobListingDetails:BlobListingDetails.Metadata))
+            foreach (CloudBlob blob in container.ListBlobs(useFlatBlobListing: true, blobListingDetails: BlobListingDetails.Metadata))
             {
                 if (!blob.Metadata.TryGetValue("DisplayName", out string displayName))
                 {
