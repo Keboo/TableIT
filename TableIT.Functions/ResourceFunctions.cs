@@ -60,7 +60,7 @@ namespace TableIT.Functions
                 };
             }
 
-            using var blobStream = await blob.OpenReadAsync();
+            var blobStream = await blob.OpenReadAsync();
             var result = new FileStreamResult(blobStream, blob.Properties.ContentType)
             {
                 EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue(blob.Properties.ETag)
