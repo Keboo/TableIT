@@ -1,17 +1,16 @@
 ﻿<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-       xmlns:views="clr-namespace:TableIT.Remote.Views"
-       xmlns:local="clr-namespace:TableIT.Remote"
        x:Class="TableIT.Remote.AppShell">
   <FlyoutItem Title="Control">
-    <Tab>
+    <Tab Title="Control" >
       <ShellContent x:Name="ControlShell" />
     </Tab>
-  </FlyoutItem>
-  <FlyoutItem Title="Images">
-    <Tab>
+    <Tab Title="Images">
       <ShellContent x:Name="ImagesShell" />
     </Tab>
+  </FlyoutItem>
+  <FlyoutItem Title="Settings">
+    <ShellContent x:Name="SettingsShell" />
   </FlyoutItem>
 
   <Shell.FlyoutFooter>

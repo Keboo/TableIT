@@ -21,6 +21,7 @@
                Grid.Column="0"
                HorizontalAlignment="Right" 
                Margin="5,0"/>
+
     <ScrollViewer ZoomMode="Enabled"
                   Grid.Column="0"
                   Grid.Row="1"
@@ -37,5 +38,14 @@
         <Image x:Name="Image" />
       </Grid>
     </ScrollViewer>
+
+    <BitmapIcon Foreground="Red"
+                x:Name="Compass"
+                UriSource="Compass.png" 
+                Width="200"
+                Height="200"
+                Grid.Row="1" Grid.Column="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"/>
   </Grid>
 </Page>

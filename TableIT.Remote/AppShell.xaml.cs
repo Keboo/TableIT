@@ -18,6 +18,7 @@ namespace TableIT.Remote
             InitializeComponent();
             ControlShell!.ContentTemplate = new DataTemplate(() => serviceProvider.GetRequiredService<ControlPage>());
             ImagesShell!.ContentTemplate = new DataTemplate(() => serviceProvider.GetRequiredService<ImagesPage>());
+            SettingsShell!.ContentTemplate = new DataTemplate(() => serviceProvider.GetRequiredService<SettingsPage>());
             //Disconnect!.ContentTemplate = new DataTemplate(() => serviceProvider.GetRequiredService<DisconnectPage>());
             messenger.Register(this);
             Routing.RegisterRoute("imagedetails", new SaneRouteFactory<ImageDetailsPage>(serviceProvider));

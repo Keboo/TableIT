@@ -65,36 +65,9 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\TableIT.Core\TableIT.Core.csproj" />
 	</ItemGroup>
-
+  
 	<ItemGroup>
-	  <Compile Update="Views\DisconnectPage.xaml.cs">
-	    <DependentUpon>DisconnectPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\ConnectPage.xaml.cs">
-	    <DependentUpon>ConnectPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\ImageDetailsPage.xaml.cs">
-	    <DependentUpon>ImageDetailsPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\ImagesPage.xaml.cs">
-	    <DependentUpon>ImagesPage.xaml</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiXaml Update="Views\DisconnectPage.xaml">
-	    <SubType>Designer</SubType>
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\ConnectPage.xaml">
-	    <SubType>Designer</SubType>
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\ImageDetailsPage.xaml">
-	    <SubType>Designer</SubType>
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\ImagesPage.xaml">
+	  <MauiXaml Update="Views\*.xaml">
 	    <SubType>Designer</SubType>
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

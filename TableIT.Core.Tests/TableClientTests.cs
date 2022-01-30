@@ -86,10 +86,9 @@ public class TableClientTests
         //    return Task.FromResult<GetImageResponse?>(null);
         //});
 
-        byte[] imageData = await client.GetImage(imageId);
+        Stream? imageData = await client.GetImage(imageId);
 
-        Assert.Equal(bytes.Length, imageData.Length);
-        Assert.Equal(bytes, imageData);
+        Assert.Equal(bytes.Length, imageData?.Length);
     }
 
     [Fact(Skip = "Needs update")]
@@ -168,74 +167,42 @@ public class TableClientTests
         Assert.False(ack);
     }
 
-    [Fact(Skip = "Needs update")]
-    public async Task TestPerf()
+    [Fact]
+    public async Task CanGetTableConfiguration()
     {
         await using var table = new TableClient();
         await table.StartAsync();
-        void Table_ConnectionStateChanged(object? sender, EventArgs e)
-        {
-            Debug.WriteLine($"TABLE: Connection State changed {table.ConnectionState}");
-        }
-        table.ConnectionStateChanged += Table_ConnectionStateChanged;
         await using var client = new TableClient(userId: table.UserId);
-        //await using var client = new TableClient(userId: "DEBUG2");
         await client.StartAsync();
 
-        const int numImages = 4;
-
-        var random = new Random();
-
-
-        var images = Enumerable.Range(0, numImages)
-            .Select(_ => Guid.NewGuid().ToString())
-            .ToDictionary(x => x, _ => random.Next(1_000_000, 2_000_000));
-
-        table.Handle<ListImagesRequest, ListImagesResponse>(message =>
+        string resourceId = Guid.NewGuid().ToString();
+        table.Handle<TableConfigurationRequest, TableConfigurationResponse>(message =>
         {
-            return Task.FromResult<ListImagesResponse?>(new ListImagesResponse
+            return Task.FromResult<TableConfigurationResponse?>(new TableConfigurationResponse
             {
-                Images = images.Select(kvp => new ImageData
+                Config = new TableConfiguration
                 {
-                    Id = kvp.Key,
-                    Name = kvp.Key.ToString(),
-                }).ToList()
+                    Id = table.UserId,
+                    CurrentResourceId = resourceId,
+                    Compass = new CompassConfiguration
+                    {
+                        IsShown = true,
+                        Size = 42,
+                        Color = 0xFF0F0D0E
+                    }
+                }
             });
         });
-        //table.Handle<GetImageRequest, GetImageResponse>(message =>
-        //{
-        //    Debug.WriteLine($"{DateTime.Now.TimeOfDay} TABLE: got image request {message}");
 
-        //    if (images.TryGetValue(message.ImageId, out int imageSize))
-        //    {
-        //        byte[] bytes = new byte[imageSize];
-        //        random.NextBytes(bytes);
-        //        return Task.FromResult<GetImageResponse?>(new GetImageResponse
-        //        {
-        //            Base64Data = Convert.ToBase64String(bytes),
-        //        });
-        //    }
-        //    return Task.FromResult<GetImageResponse?>(null);
-        //});
+        TableConfiguration? config = await client.GetTableConfiguration();
 
-        IReadOnlyList<ImageData> imageDatas = await client.GetImages();
+        Assert.NotNull(config);
+        Assert.Equal(table.UserId, config!.Id);
+        Assert.Equal(resourceId, config.CurrentResourceId);
+        Assert.True(config.Compass!.IsShown);
+        Assert.Equal(42, config.Compass.Size);
+        Assert.Equal(0xFF0F0D0E, config.Compass.Color);
 
-        Assert.Equal(numImages, imageDatas.Count);
-
-        //var tasks = imageDatas.Select(imageData => client.GetImage(imageData.Id, 100));
-        try
-        {
-            foreach (var imageData in imageDatas)
-            {
-                byte[] imageBytes = await client.GetImage(imageData.Id, 100);
-                Assert.Equal(images[imageData.Id], imageBytes.Length);
-            }
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-        
     }
 }
 

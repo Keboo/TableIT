@@ -1,0 +1,64 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TableIT.Remote.ViewModels"
+             x:Class="TableIT.Remote.Views.SettingsPage"
+             x:DataType="vm:SettingsPageViewModel"
+             BackgroundColor="{DynamicResource Background}">
+
+  <!-- 
+  RefreshView is broken.
+  https://github.com/dotnet/maui/issues/4287
+  -->
+  <Grid RowSpacing="10" Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition  />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Label Text="{x:Binding TableId, StringFormat='Table ID: {0}'}" 
+             GridLayout.Row="0" GridLayout.Column="0" GridLayout.ColumnSpan="2"/>
+
+    <Label Text="Compass Visible" 
+           VerticalOptions="Center"
+           GridLayout.Row="1" GridLayout.Column="0"/>
+    <CheckBox IsChecked="{Binding IsCompassShown}" 
+              GridLayout.Row="1" GridLayout.Column="1"/>
+
+    <Label Text="Compass Dark" 
+           VerticalOptions="Center"
+           GridLayout.Row="2" GridLayout.Column="0"/>
+    <CheckBox IsChecked="{Binding IsDarkColor}" 
+              GridLayout.Row="2" GridLayout.Column="1"/>
+
+    <Label Text="Compass Size" 
+           VerticalOptions="Center"
+           GridLayout.Row="3" GridLayout.Column="0"/>
+    <Entry Text="{x:Binding CompassSize}"
+           TextColor="{DynamicResource Foreground}"
+           Keyboard="Numeric"
+           GridLayout.Row="3" GridLayout.Column="1"/>
+
+    <Button Text="Save"
+            Margin="30"
+            Command="{x:Binding SaveCommand}"
+            GridLayout.Row="5" GridLayout.Column="0"
+            GridLayout.ColumnSpan="2" 
+            HorizontalOptions="Fill"/>
+
+
+    <ActivityIndicator IsVisible="{x:Binding IsLoading}"
+                       IsRunning="{x:Binding IsLoading}" 
+                       GridLayout.Row="0" GridLayout.Column="0"
+                       GridLayout.RowSpan="4" GridLayout.ColumnSpan="2"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"/>
+  </Grid>
+</ContentPage>

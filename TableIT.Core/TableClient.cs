@@ -24,11 +24,18 @@ public partial class TableClient : IAsyncDisposable
 
     public string UserId { get; }
 
-    public TableClient(IResourcePersistence resourcePersistence, string? endpoint = null, string? userId = null)
+    public TableClient(IResourcePersistence? resourcePersistence = null, string? endpoint = null, string? userId = null)
     {
+        Timeout = TimeSpan.FromSeconds(5);
+#if DEBUG
+        if (System.Diagnostics.Debugger.IsAttached)
+        {
+            Timeout = TimeSpan.FromMinutes(10);
+        }
+#endif
         UserId = userId ?? GenerateUserId();
         endpoint ??= "https://tableitfunctions.azurewebsites.net";
-        ResourceManager = new ResourceManager(resourcePersistence ?? throw new ArgumentNullException(nameof(resourcePersistence)), endpoint);
+        ResourceManager = new ResourceManager(resourcePersistence ?? new MemoryResourcePersistence(), endpoint);
 
         _connection = new HubConnectionBuilder()
             .WithUrl(endpoint + "/api", options =>

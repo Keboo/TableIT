@@ -43,6 +43,10 @@ namespace TableIT.Remote
             builder.Services.AddSingleton<DisconnectPage>();
             builder.Services.AddSingleton<DisconnectPageViewModel>();
 
+            builder.Services.AddSingleton<SettingsPage>();
+            builder.Services.AddSingleton<SettingsPageViewModel>();
+
+
             builder.Services.AddSingleton<Imaging.IImageManager, Imaging.ImageManager>();
             builder.Services.AddSingleton<IMessenger, WeakReferenceMessenger>();
             builder.Services.AddSingleton<TableClientManager>();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core.Messages;
@@ -42,6 +41,23 @@ namespace TableIT.Core
                 return response.WasDeleted;
             }
             return false;
+        }
+
+        public static async Task<TableConfiguration?> GetTableConfiguration(this TableClient client)
+        {
+            if (await client.SendRequestAsync<TableConfigurationRequest, TableConfigurationResponse>(new()) is { } response)
+            {
+                return response.Config;
+            }
+            return null;
+        }
+
+        public static async Task UpdateTableConfiguration(this TableClient client, TableConfiguration config)
+        {
+            await client.SendTableMessage(new SetTableConfigurationMessage
+            {
+                Config = config
+            });
         }
 
         /// <summary>
