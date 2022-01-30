@@ -89,7 +89,7 @@ namespace TableIT.Functions
 
         [FunctionName("ListResources")]
         public static IActionResult ListResources(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "list/resources")] HttpRequest _,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "list/resources")] HttpRequest req,
             [StorageAccount("BlobConnection")] CloudStorageAccount account,
             ILogger log)
         {
@@ -147,7 +147,7 @@ namespace TableIT.Functions
         //TODO: Auth
         [FunctionName("DeleteResource")]
         public static async Task<IActionResult> DeleteResources(
-                [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "resources/{resourceId}")] HttpRequest _,
+                [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "resources/{resourceId}")] HttpRequest req,
                 [Blob("resources/{resourceId}", FileAccess.ReadWrite, Connection = "BlobConnection")] CloudBlob blob,
                 ILogger log)
         {
