@@ -86,7 +86,7 @@ public class TableClientTests
         //    return Task.FromResult<GetImageResponse?>(null);
         //});
 
-        Stream? imageData = await client.GetImage(imageId);
+        Stream? imageData = await client.GetImage(imageId, "");
 
         Assert.Equal(bytes.Length, imageData?.Length);
     }

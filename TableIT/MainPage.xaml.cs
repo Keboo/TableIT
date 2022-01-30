@@ -19,7 +19,6 @@ public sealed partial class MainPage : Page
 {
     private ImageManager? _imageManager;
     private TableClient? _client;
-    private IResourcePersistence _persistence = new ResourcePersistence();
     public MainPage()
     {
         InitializeComponent();
@@ -34,7 +33,7 @@ public sealed partial class MainPage : Page
             });
             if (_client is { } client)
             {
-                _imageManager = new(client, _persistence);
+                _imageManager = new(client, new ResourcePersistence());
                 if (await _imageManager.Load() is { } imageStream)
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -67,7 +66,7 @@ public sealed partial class MainPage : Page
         try
         {
 #if DEBUG
-            _client = new TableClient(_persistence, userId: "DEBUG1");
+            _client = new TableClient(userId: "DEBUG1");
 #else
             _client = new TableClient();
 #endif
@@ -110,7 +109,7 @@ public sealed partial class MainPage : Page
                 });
 
                 if (_imageManager is { } imageManager &&
-                    await imageManager.GetImage(message.ImageId) is { } imageStream)
+                    await imageManager.GetImage(message.ImageId, message.Version) is { } imageStream)
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     async () =>

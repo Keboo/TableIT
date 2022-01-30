@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TableIT.Remote.Imaging
 {
-    public record RemoteImage(string ImageId, string Name)
+    public record RemoteImage(string ImageId, string Name, string? Version)
     {
         public ImageSource? Thumbnail { get; private set; }
         public byte[]? Image { get; private set; }
@@ -79,7 +79,7 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Image is null && ClientManager.GetClient() is { } client)
             {
-                Stream? imageData = await client.GetImage(image.ImageId);
+                Stream? imageData = await client.GetImage(image.ImageId, image.Version);
                 if (imageData is not null)
                 {
                     await image.SetImageData(imageData);
@@ -96,7 +96,7 @@ namespace TableIT.Remote.Imaging
             }
             if (image.Thumbnail is null && ClientManager.GetClient() is { } client)
             {
-                Stream? imageData = await client.GetImage(image.ImageId, width: 50);
+                Stream? imageData = await client.GetImage(image.ImageId, image.Version, width: 50);
                 if (imageData is not null)
                 {
                     await image.SetThumbnailData(imageData);
@@ -113,9 +113,9 @@ namespace TableIT.Remote.Imaging
                 {
                     var images = await client.GetImages();
                     Images.Clear();
-                    foreach (var image in images)
+                    foreach (var image in images.Where(x => !string.IsNullOrEmpty(x.Id)))
                     {
-                        Images[image.Id] = new RemoteImage(image.Id, image.Name ?? "");
+                        Images[image.Id!] = new RemoteImage(image.Id!, image.Name ?? "", image.Version);
                     }
                 }
             }

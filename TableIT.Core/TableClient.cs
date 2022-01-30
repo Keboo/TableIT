@@ -3,14 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using TableIT.Core.Imaging;
 using TableIT.Core.Messages;
+using TableIT.Core.Resources;
 
 namespace TableIT.Core;
 
@@ -24,7 +21,7 @@ public partial class TableClient : IAsyncDisposable
 
     public string UserId { get; }
 
-    public TableClient(IResourcePersistence? resourcePersistence = null, string? endpoint = null, string? userId = null)
+    public TableClient(string? endpoint = null, string? userId = null)
     {
         Timeout = TimeSpan.FromSeconds(5);
 #if DEBUG
@@ -35,7 +32,7 @@ public partial class TableClient : IAsyncDisposable
 #endif
         UserId = userId ?? GenerateUserId();
         endpoint ??= "https://tableitfunctions.azurewebsites.net";
-        ResourceManager = new ResourceManager(resourcePersistence ?? new MemoryResourcePersistence(), endpoint);
+        ResourceManager = new ResourceManager(endpoint);
 
         _connection = new HubConnectionBuilder()
             .WithUrl(endpoint + "/api", options =>
@@ -187,8 +184,20 @@ public partial class TableClient : IAsyncDisposable
 
     public async Task<Stream?> GetImage(
         string imageId,
+        string? version,
         int? width = null,
-        int? height = null) => await ResourceManager.Get(imageId, width, height);
+        int? height = null) => await ResourceManager.Get(imageId, version, width, height);
+
+    public async Task ImportImage(
+        string name,
+        Stream imageStream,
+        IProgress<double>? progress = null)
+        => await ResourceManager.Import(imageStream, name);
+
+    public async Task<bool> DeleteImage(
+        string name,
+        string? version)
+        => await ResourceManager.Delete(name, version);
 
     private async Task<bool> SendAsync(
         string methodName,

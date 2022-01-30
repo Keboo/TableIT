@@ -33,16 +33,6 @@ namespace TableIT.Core
             return false;
         }
 
-        public static async Task<bool> DeleteImage(this TableClient client, string imageId)
-        {
-            DeleteImageRequest request = new() { ImageId = imageId };
-            if (await client.SendRequestAsync<DeleteImageRequest, DeleteImageResponse>(request) is { } response)
-            {
-                return response.WasDeleted;
-            }
-            return false;
-        }
-
         public static async Task<TableConfiguration?> GetTableConfiguration(this TableClient client)
         {
             if (await client.SendRequestAsync<TableConfigurationRequest, TableConfigurationResponse>(new()) is { } response)
@@ -76,24 +66,6 @@ namespace TableIT.Core
 
         private static async Task SendRemoteMessage<TMessage>(this TableClient client, TMessage message) 
             => await client.SendAsync("remotemessage", message);
-
-        public static async Task SendImage(
-            this TableClient client,
-            string name,
-            Stream imageStream,
-            string id,
-            IProgress<double>? progress = null)
-        {
-            using var ms = new MemoryStream();
-            await imageStream.CopyToAsync(ms);
-
-            //await client.SendTableMessage(new LoadImageMessage
-            //{
-            //    ImageId = id,
-            //    ImageName = name,
-            //    Base64Data = Convert.ToBase64String(ms.ToArray()),
-            //});
-        }
 
         public static async Task SetCurrentImage(this TableClient client, string imageId)
         {

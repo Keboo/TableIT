@@ -28,7 +28,7 @@ internal class ImageManager
         IList<ResourceData> data = await Persistence.GetAll();
         if (data.FirstOrDefault(x => x.IsCurrent) is { } current)
         {
-            return await Client.GetImage(current.Id);
+            return await Client.GetImage(current.Id, current.Version);
         }
         return null;
         //TODO: Load last image if there was one
@@ -59,9 +59,9 @@ internal class ImageManager
         
     }
 
-    public async Task<Stream?> GetImage(string id)
+    public async Task<Stream?> GetImage(string id, string version)
     {
-        Stream? stream = await Client.GetImage(id);
+        Stream? stream = await Client.GetImage(id, version);
         //TODO: Remember last image
         return stream;
     }

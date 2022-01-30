@@ -29,7 +29,7 @@ namespace TableIT.Remote
             if (client is null)
             {
                 //TODO: real provider
-                client = Client = new TableClient(new MemoryResourcePersistence(), userId: UserId);
+                client = Client = new TableClient(userId: UserId);
                 client.ConnectionStateChanged += ClientConnectionStateChanged;
             }
             return client;
