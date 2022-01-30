@@ -68,7 +68,7 @@ namespace TableIT.Functions
                 };
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.LogError(ex, "Error getting resource {0}", req.Query);
                 throw;
@@ -89,7 +89,7 @@ namespace TableIT.Functions
 
         [FunctionName("ListResources")]
         public static IActionResult ListResources(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "list/resources")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "list/resources")] HttpRequest _,
             [StorageAccount("BlobConnection")] CloudStorageAccount account,
             ILogger log)
         {
@@ -116,6 +116,7 @@ namespace TableIT.Functions
             }
         }
 
+        //TODO: Auth
         [FunctionName("ImportResource")]
         public static async Task<IActionResult> ImportResources(
                 [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import/resources")] HttpRequest req,
@@ -126,20 +127,41 @@ namespace TableIT.Functions
             {
                 IFormCollection form = await req.ReadFormAsync();
                 IFormFile file = form.Files["file"];
-                
+
                 CloudBlobClient blobClient = account.CreateCloudBlobClient();
                 var container = blobClient.GetContainerReference("resources");
-
-                CloudBlockBlob blob = container.GetBlockBlobReference(file.Name + Guid.NewGuid().ToString());
+                CloudBlockBlob blob = container.GetBlockBlobReference(file.FileName + Guid.NewGuid().ToString());
                 await blob.UploadFromStreamAsync(file.OpenReadStream());
-                blob.Metadata["DisplayName"] = file.Name;
+                blob.Metadata["DisplayName"] = file.FileName;
                 blob.SetMetadata();
 
                 return new JsonResult(new Resource(blob.Name, file.Name, blob.Properties.ETag));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 log.LogError(e, "Error importing resource");
+                throw;
+            }
+        }
+
+        //TODO: Auth
+        [FunctionName("DeleteResource")]
+        public static async Task<IActionResult> DeleteResources(
+                [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "resources/{resourceId}")] HttpRequest _,
+                [Blob("resources/{resourceId}", FileAccess.ReadWrite, Connection = "BlobConnection")] CloudBlob blob,
+                ILogger log)
+        {
+            try
+            {
+                if (!await blob.DeleteIfExistsAsync())
+                {
+                    return new NotFoundResult();
+                }
+                return new OkResult();
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Error deleting resource {0}", blob.Name);
                 throw;
             }
         }
