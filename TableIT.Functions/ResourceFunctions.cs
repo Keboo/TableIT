@@ -118,7 +118,7 @@ namespace TableIT.Functions
 
         [FunctionName("ImportResource")]
         public static async Task<IActionResult> ImportResources(
-                [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "import/resources")] HttpRequest req,
+                [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "import/resources")] HttpRequest req,
                 [StorageAccount("BlobConnection")] CloudStorageAccount account,
                 ILogger log)
         {
