@@ -108,7 +108,7 @@ public class TableClientTests
 
         using (var ms = new MemoryStream(bytes))
         {
-            await client.SendImage("test image", ms, Guid.NewGuid().ToString());
+            await client.ImportImage("test image", ms);
         }
         LoadImageMessage message = await getMessage;
 

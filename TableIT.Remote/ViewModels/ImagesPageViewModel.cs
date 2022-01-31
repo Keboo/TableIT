@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TableIT.Core;
 using TableIT.Remote.Imaging;
 using TableIT.Remote.Messages;
 
@@ -44,7 +45,7 @@ namespace TableIT.Remote.ViewModels
             ImportCommand = new AsyncRelayCommand(OnImport);
             RefreshCommand = new AsyncRelayCommand(LoadImages);
             DeleteCommand = new AsyncRelayCommand<ImageViewModel>(DeleteImage);
-            SelectCommand = new RelayCommand<ImageViewModel>(OnItemSelected);
+            SelectCommand = new AsyncRelayCommand<ImageViewModel>(OnSelect);
             ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
             ImageManager = imageManager ?? throw new ArgumentNullException(nameof(imageManager));
             Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
@@ -91,16 +92,15 @@ namespace TableIT.Remote.ViewModels
                         imageName = await displayPrompt();
                     }
                     imageName ??= fileResult.FileName;
-                    var imageViewModel = new ImageViewModel(new RemoteImage("", imageName, ""));
-                    Images.Add(imageViewModel);
+                    
                     using Stream stream = await fileResult.OpenReadAsync();
-                    Progress<double> progres = new(x => imageViewModel.Progress = x);
-                    if (ClientManager.GetClient() is { } client)
+                    if (ClientManager.GetClient() is { } client &&
+                        await client.ImportImage(imageName, stream) is { } imageData)
                     {
-                        await client.ImportImage(imageName, stream, progres);
+                        var imageViewModel = new ImageViewModel(new RemoteImage(imageData.Id, imageData.Name, imageData.Version));
+                        Images.Add(imageViewModel);
                         await LoadThumbnail(imageViewModel);
                     }
-                    imageViewModel.Progress = -1;
                 }
             }
             catch(Exception)
@@ -113,6 +113,15 @@ namespace TableIT.Remote.ViewModels
         {
             if (imageViewModel is null) return;
             Messenger.Send(new ImageSelected(imageViewModel.Data.ImageId));
+        }
+
+        private async Task OnSelect(ImageViewModel? imageViewModel)
+        {
+            if (imageViewModel is not null &&
+                ClientManager.GetClient() is { } client)
+            {
+                await client.SetCurrentImage(imageViewModel.Data.ImageId);
+            }
         }
 
         private async Task DeleteImage(ImageViewModel? image)

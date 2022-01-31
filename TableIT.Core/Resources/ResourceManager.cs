@@ -43,8 +43,8 @@ internal class ResourceManager
             {
                 //uri += "?" + query;
             }
-            var response = await HttpClient.GetAsync(uri);
-            if (response.IsSuccessStatusCode)
+            HttpResponseMessage? response = await HttpClient.GetAsync(uri);
+            if (response?.IsSuccessStatusCode == true)
             {
                 data = await response.Content.ReadAsByteArrayAsync();
                 version = response.Headers.ETag.Tag;

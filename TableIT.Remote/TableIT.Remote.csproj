@@ -15,7 +15,7 @@
 		<ApplicationTitle>TableIT.Remote</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.TableIT.Remote</ApplicationId>
+		<ApplicationId>com.keboo.TableIT.Remote</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationVersion>1</ApplicationVersion>

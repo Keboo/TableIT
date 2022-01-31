@@ -188,7 +188,7 @@ public partial class TableClient : IAsyncDisposable
         int? width = null,
         int? height = null) => await ResourceManager.Get(imageId, version, width, height);
 
-    public async Task ImportImage(
+    public async Task<ImageData?> ImportImage(
         string name,
         Stream imageStream,
         IProgress<double>? progress = null)
