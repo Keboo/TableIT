@@ -3,12 +3,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core;
-using TableIT.Core.Imaging;
 using TableIT.Core.Messages;
 using Windows.UI.Core;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml;
 
 namespace TableIT;
 
@@ -22,6 +21,8 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
+
+        ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
         Task.Run(async () =>
         {
@@ -54,6 +55,14 @@ public sealed partial class MainPage : Page
 
         });
 
+    }
+
+    private async void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+    {
+        if (_imageManager is { } imageManager)
+        {
+            await imageManager.UpdateCurrentImageData(ScrollViewer.HorizontalOffset, ScrollViewer.VerticalOffset, ScrollViewer.ZoomFactor);
+        }
     }
 
     private async Task ConnectToServer()
@@ -132,7 +141,7 @@ public sealed partial class MainPage : Page
                 string? currentResourceId = null;
                 if (_imageManager is { } imageManager)
                 {
-                    currentResourceId = (await imageManager.GetCurrentImage())?.Id;
+                    currentResourceId = (await imageManager.GetCurrentData())?.Id;
                 }
                 CompassConfiguration? compass = null;
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Imaging;
@@ -16,18 +17,20 @@ namespace TableIT;
 internal class ResourcePersistence : IResourcePersistence
 {
     private const string MetadataFile = "data.json";
+    private SemaphoreSlim Lock { get; } = new(1, 1);
+    private IReadOnlyList<ResourceData>? Cache { get; set; }
 
     public async Task<Stream?> Get(string id)
     {
         StorageFolder imagesFolder = await GetImagesFolder();
         try
         {
-            IList<ResourceData> data = await GetAll();
+            IReadOnlyList<ResourceData> data = await GetAll();
             foreach (var item in data)
             {
                 item.IsCurrent = item.Id == id;
             }
-            await SaveData(data);
+            await Save(data);
             StorageFile file = await imagesFolder.GetFileAsync(id);
             return await file.OpenStreamForReadAsync();
         }
@@ -37,22 +40,32 @@ internal class ResourcePersistence : IResourcePersistence
         }
     }
 
-    public async Task<IList<ResourceData>> GetAll()
+    public async Task<IReadOnlyList<ResourceData>> GetAll()
     {
-        StorageFolder imagesFolder = await GetImagesFolder();
+        if (Cache is { } cache)
+        {
+            return cache;
+        }
+
         try
         {
+            await Lock.WaitAsync();
+            StorageFolder imagesFolder = await GetImagesFolder();
             StorageFile file = await imagesFolder.CreateFileAsync(MetadataFile, CreationCollisionOption.OpenIfExists);
             using Stream fileStream = await file.OpenStreamForReadAsync();
             using var sr = new StreamReader(fileStream);
             string foo = await sr.ReadToEndAsync();
             fileStream.Position = 0;
-            return JsonSerializer.Deserialize<ResourceData[]>(fileStream) ?? Array.Empty<ResourceData>();
+            return Cache = JsonSerializer.Deserialize<ResourceData[]>(fileStream) ?? Array.Empty<ResourceData>();
         }
         catch (Exception)
         {
             //TODO: Exception handling 
             return Array.Empty<ResourceData>();
+        }
+        finally
+        {
+            Lock.Release();
         }
     }
 
@@ -66,26 +79,29 @@ internal class ResourcePersistence : IResourcePersistence
         List<ResourceData> existingImages = (await GetAll()).ToList();
         existingImages.Add(new ResourceData(id, ""));
 
-        await SaveData(existingImages);
+        await Save(existingImages);
     }
 
-    private async Task SaveData(IList<ResourceData> newData)
+    public async Task Save(IEnumerable<ResourceData> newData)
     {
-        StorageFolder imagesFolder = await GetImagesFolder();
         try
         {
+            await Lock.WaitAsync();
+            StorageFolder imagesFolder = await GetImagesFolder();
             StorageFile file = await imagesFolder.CreateFileAsync(MetadataFile, CreationCollisionOption.ReplaceExisting);
             using Stream fileStream = await file.OpenStreamForWriteAsync();
-            JsonSerializer.Serialize(fileStream, newData.ToArray());
+            JsonSerializer.Serialize(fileStream, Cache = newData.ToArray());
             await fileStream.FlushAsync();
         }
         catch (Exception)
         {
             //TODO: Exception handling
         }
+        finally 
+        {
+            Lock.Release();
+        }
     }
-
-    
 
     private static async Task<StorageFolder> GetImagesFolder()
     {
