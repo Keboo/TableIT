@@ -6,7 +6,7 @@ public class ResourceData
     public string Version { get; }
     public double HorizontalOffset { get; set; }
     public double VerticalOffset { get; set; }
-    public double ZoomFactor { get; set; }
+    public float ZoomFactor { get; set; }
 
     public bool IsCurrent { get; set; }
 

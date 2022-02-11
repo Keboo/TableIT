@@ -25,7 +25,7 @@ internal class ImageManager
         IReadOnlyList<ResourceData> data = await Persistence.GetAll();
         if (data.FirstOrDefault(x => x.IsCurrent) is { } current)
         {
-            return await Client.GetImage(current.Id, current.Version);
+            return await GetImage(current.Id, current.Version);
         }
         return null;
     }
@@ -35,11 +35,19 @@ internal class ImageManager
         if (await Client.GetImage(id, version) is { } current)
         {
             IReadOnlyList<ResourceData> data = await Persistence.GetAll();
+            Dictionary<string, ResourceData> keyed = new();
+            
             foreach (var item in data)
             {
-                item.IsCurrent = item.Id == id;
+                keyed[item.Id] = item;
             }
-            await Persistence.Save(data);
+            if (!keyed.TryGetValue(id, out var resourceData))
+            {
+                resourceData = new ResourceData(id, version);
+                keyed[id] = resourceData;
+            }
+            resourceData.IsCurrent = true;
+            await Persistence.Save(keyed.Values);
             return current;
         }
         return null;

@@ -37,6 +37,7 @@ public sealed partial class MainPage : Page
                 _imageManager = new(client, new ResourcePersistence());
                 if (await _imageManager.Load() is { } imageStream)
                 {
+                    ResourceData? resourceData = await _imageManager.GetCurrentData();
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     async () =>
                     {
@@ -44,6 +45,10 @@ public sealed partial class MainPage : Page
                         BitmapImage bitmapImage = new();
                         await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
                         Image.Source = bitmapImage;
+                        if (resourceData is not null)
+                        {
+                            ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData.VerticalOffset, resourceData.ZoomFactor);
+                        }
                     });
                 }
             }
