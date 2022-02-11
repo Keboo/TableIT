@@ -34,22 +34,10 @@ public sealed partial class MainPage : Page
             });
             if (_client is { } client)
             {
-                _imageManager = new(client, new ResourcePersistence());
-                if (await _imageManager.Load() is { } imageStream)
+                var imageManager = _imageManager = new(client, new ResourcePersistence());
+                if (await imageManager.Load() is { } imageStream)
                 {
-                    ResourceData? resourceData = await _imageManager.GetCurrentData();
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    async () =>
-                    {
-                        using var _ = imageStream;
-                        BitmapImage bitmapImage = new();
-                        await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
-                        Image.Source = bitmapImage;
-                        if (resourceData is not null)
-                        {
-                            ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData.VerticalOffset, resourceData.ZoomFactor);
-                        }
-                    });
+                    await LoadImage(imageManager, imageStream);
                 }
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -68,6 +56,23 @@ public sealed partial class MainPage : Page
         {
             await imageManager.UpdateCurrentImageData(ScrollViewer.HorizontalOffset, ScrollViewer.VerticalOffset, ScrollViewer.ZoomFactor);
         }
+    }
+
+    private async Task LoadImage(ImageManager imageManager, Stream imageStream)
+    {
+        ResourceData? resourceData = await imageManager.GetCurrentData();
+        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+        async () =>
+        {
+            using var _ = imageStream;
+            BitmapImage bitmapImage = new();
+            await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
+            Image.Source = bitmapImage;
+            if (resourceData is not null)
+            {
+                ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData.VerticalOffset, resourceData.ZoomFactor);
+            }
+        });
     }
 
     private async Task ConnectToServer()
@@ -125,14 +130,7 @@ public sealed partial class MainPage : Page
                 if (_imageManager is { } imageManager &&
                     await imageManager.GetImage(message.ImageId, message.Version) is { } imageStream)
                 {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    async () =>
-                    {
-                        using var _ = imageStream;
-                        BitmapImage bitmapImage = new();
-                        await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
-                        Image.Source = bitmapImage;
-                    });
+                    await LoadImage(imageManager, imageStream);
                 }
             });
 

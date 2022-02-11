@@ -131,7 +131,7 @@ public static class ResourceFunctions
             var container = blobClient.GetContainerReference("resources");
             CloudBlockBlob blob = container.GetBlockBlobReference(file.FileName + Guid.NewGuid().ToString());
             await blob.UploadFromStreamAsync(file.OpenReadStream());
-            blob.Metadata["DisplayName"] = file.FileName;
+            blob.Metadata["DisplayName"] = file.Name;
             blob.SetMetadata();
 
             return new JsonResult(new Resource(blob.Name, file.Name, blob.Properties.ETag));
