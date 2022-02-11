@@ -68,10 +68,7 @@ public sealed partial class MainPage : Page
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
             Image.Source = bitmapImage;
-            if (resourceData is not null)
-            {
-                ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData.VerticalOffset, resourceData.ZoomFactor);
-            }
+            ScrollViewer.ChangeView(resourceData?.HorizontalOffset ?? 0, resourceData?.VerticalOffset ?? 0, resourceData?.ZoomFactor ?? 1);
         });
     }
 

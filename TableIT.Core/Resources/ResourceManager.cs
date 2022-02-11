@@ -98,7 +98,7 @@ internal class ResourceManager
         fileStreamContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
 
         //Add the file
-        multipartFormContent.Add(fileStreamContent, name: name, fileName: name);
+        multipartFormContent.Add(fileStreamContent, name: "file", fileName: name);
 
 
         //Send it

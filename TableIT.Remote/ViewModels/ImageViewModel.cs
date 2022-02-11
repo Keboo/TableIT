@@ -3,34 +3,33 @@ using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 using TableIT.Remote.Imaging;
 
-namespace TableIT.Remote.ViewModels
+namespace TableIT.Remote.ViewModels;
+
+public class ImageViewModel : ObservableObject
 {
-    public class ImageViewModel : ObservableObject
+    public ImageViewModel(RemoteImage data)
     {
-        public ImageViewModel(RemoteImage data)
-        {
-            Data = data;
-        }
+        Data = data;
+    }
 
-        public RemoteImage Data { get; }
-        public string Name => Data.Name;
+    public RemoteImage Data { get; }
+    public string Name => Data.Name;
 
-        private ImageSource? _image;
-        public ImageSource? Image
-        {
-            get => _image;
-            set => SetProperty(ref _image, value);
-        }
+    private ImageSource? _image;
+    public ImageSource? Image
+    {
+        get => _image;
+        set => SetProperty(ref _image, value);
+    }
 
-        private double _progress = -1;
-        public double Progress
+    private double _progress = -1;
+    public double Progress
+    {
+        get => _progress;
+        set
         {
-            get => _progress;
-            set
-            {
-                SetProperty(ref _progress, value);
-                Debug.WriteLine($"Progress {value}");
-            }
+            SetProperty(ref _progress, value);
+            Debug.WriteLine($"Progress {value}");
         }
     }
 }

@@ -13,49 +13,51 @@ using TableIT.Core;
 using TableIT.Remote.Imaging;
 using TableIT.Remote.Messages;
 
-namespace TableIT.Remote.ViewModels
+namespace TableIT.Remote.ViewModels;
+
+public class ImagesPageViewModel : ObservableObject
 {
-    public class ImagesPageViewModel : ObservableObject
+    public event Func<Task<string?>>? DisplayPrompt;
+
+    public IRelayCommand SelectCommand { get; }
+    public IRelayCommand ImportCommand { get; }
+    public IRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand DeleteCommand { get; }
+    public TableClientManager ClientManager { get; }
+    public IImageManager ImageManager { get; }
+    public IMessenger Messenger { get; }
+    public IDispatcher Dispatcher { get; }
+    public ObservableCollection<ImageViewModel> Images { get; } = new();
+
+    private bool _isLoading;
+    public bool IsLoading
     {
-        public event Func<Task<string?>>? DisplayPrompt;
+        get => _isLoading;
+        set => SetProperty(ref _isLoading, value);
+    }
 
-        public IRelayCommand SelectCommand { get; }
-        public IRelayCommand ImportCommand { get; }
-        public IRelayCommand RefreshCommand { get; }
-        public IAsyncRelayCommand DeleteCommand { get; }
-        public TableClientManager ClientManager { get; }
-        public IImageManager ImageManager { get; }
-        public IMessenger Messenger { get; }
-        public IDispatcher Dispatcher { get; }
-        public ObservableCollection<ImageViewModel> Images { get; } = new();
+    public ImagesPageViewModel(
+        TableClientManager clientManager,
+        IImageManager imageManager,
+        IMessenger messenger, 
+        IDispatcher dispatcher)
+    {
+        ImportCommand = new AsyncRelayCommand(OnImport);
+        RefreshCommand = new AsyncRelayCommand(async () => await LoadImages(true));
+        DeleteCommand = new AsyncRelayCommand<ImageViewModel>(DeleteImage);
+        SelectCommand = new AsyncRelayCommand<ImageViewModel>(OnSelect);
+        ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
+        ImageManager = imageManager ?? throw new ArgumentNullException(nameof(imageManager));
+        Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+        Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+    }
 
-        private bool _isLoading;
-        public bool IsLoading
+    public async Task LoadImages(bool force)
+    {
+        IsLoading = true;
+
+        if (force || Images.Count == 0)
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public ImagesPageViewModel(
-            TableClientManager clientManager,
-            IImageManager imageManager,
-            IMessenger messenger, 
-            IDispatcher dispatcher)
-        {
-            ImportCommand = new AsyncRelayCommand(OnImport);
-            RefreshCommand = new AsyncRelayCommand(LoadImages);
-            DeleteCommand = new AsyncRelayCommand<ImageViewModel>(DeleteImage);
-            SelectCommand = new AsyncRelayCommand<ImageViewModel>(OnSelect);
-            ClientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
-            ImageManager = imageManager ?? throw new ArgumentNullException(nameof(imageManager));
-            Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        }
-
-        public async Task LoadImages()
-        {
-            IsLoading = true;
-
             var images = (await ImageManager.LoadImages(true))
                 .Select(x => new ImageViewModel(x))
                 .ToList();
@@ -69,83 +71,86 @@ namespace TableIT.Remote.ViewModels
             {
                 await LoadThumbnail(image);
             }
-            IsLoading = false;
         }
+        IsLoading = false;
+    }
 
-        private async Task LoadThumbnail(ImageViewModel image)
+    private async Task LoadThumbnail(ImageViewModel image)
+    {
+        if (await ImageManager.LoadThumbnailImage(image.Data) is { } remoteImage)
         {
-            if (await ImageManager.LoadThumbnailImage(image.Data) is { } remoteImage)
-            {
-                image.Image = remoteImage.Thumbnail;
-            }
+            image.Image = remoteImage.Thumbnail;
         }
+    }
 
-        private async Task OnImport()
+    private async Task OnImport()
+    {
+        try
         {
-            try
+            if (await PickAndShow(PickOptions.Images) is { } fileResult)
             {
-                if (await PickAndShow(PickOptions.Images) is { } fileResult)
+                string? imageName = null;
+                if (DisplayPrompt is { } displayPrompt)
                 {
-                    string? imageName = null;
-                    if (DisplayPrompt is { } displayPrompt)
-                    {
-                        imageName = await displayPrompt();
-                    }
-                    imageName ??= fileResult.FileName;
-                    
-                    using Stream stream = await fileResult.OpenReadAsync();
-                    if (ClientManager.GetClient() is { } client &&
-                        await client.ImportImage(imageName, stream) is { } imageData)
-                    {
-                        var imageViewModel = new ImageViewModel(new RemoteImage(imageData.Id, imageData.Name, imageData.Version));
-                        Images.Add(imageViewModel);
-                        await LoadThumbnail(imageViewModel);
-                    }
+                    imageName = await displayPrompt();
+                }
+                imageName ??= fileResult.FileName;
+                
+                using Stream stream = await fileResult.OpenReadAsync();
+                if (ClientManager.GetClient() is { } client &&
+                    await client.ImportImage(imageName, stream) is { } imageData)
+                {
+                    var imageViewModel = new ImageViewModel(new RemoteImage(imageData.Id, imageData.Name, imageData.Version));
+                    Images.Add(imageViewModel);
+                    await LoadThumbnail(imageViewModel);
                 }
             }
-            catch(Exception)
-            {
-
-            }
         }
-
-        public void OnItemSelected(ImageViewModel? imageViewModel)
+        catch(Exception)
         {
-            if (imageViewModel is null) return;
-            Messenger.Send(new ImageSelected(imageViewModel.Data.ImageId));
+
         }
+    }
 
-        private async Task OnSelect(ImageViewModel? imageViewModel)
+    public void OnItemSelected(ImageViewModel? imageViewModel)
+    {
+        if (imageViewModel is null) return;
+        Messenger.Send(new ImageSelected(imageViewModel.Data.ImageId));
+    }
+
+    private async Task OnSelect(ImageViewModel? imageViewModel)
+    {
+        if (imageViewModel is not null &&
+            ClientManager.GetClient() is { } client)
         {
-            if (imageViewModel is not null &&
-                ClientManager.GetClient() is { } client)
-            {
-                await client.SetCurrentImage(imageViewModel.Data.ImageId);
-            }
+            await client.SetCurrentImage(imageViewModel.Data.ImageId);
         }
+    }
 
-        private async Task DeleteImage(ImageViewModel? image)
+    private async Task DeleteImage(ImageViewModel? image)
+    {
+        if (image is null) return;
+        if (ClientManager.GetClient() is { } client &&
+            await client.DeleteImage(image.Data.ImageId, image.Data.Version))
         {
-            if (image is null) return;
-            if (ClientManager.GetClient() is { } client &&
-                await client.DeleteImage(image.Data.ImageId, image.Data.Version))
+            await Dispatcher.DispatchAsync(() =>
             {
                 Images.Remove(image);
-            }
+            });
         }
+    }
 
-        private static async Task<FileResult?> PickAndShow(PickOptions options)
+    private static async Task<FileResult?> PickAndShow(PickOptions options)
+    {
+        try
         {
-            try
-            {
-                FileResult? result = await Device.InvokeOnMainThreadAsync(async () => await FilePicker.PickAsync(options));
-                return result;
-            }
-            catch (Exception)
-            {
-                // The user canceled or something went wrong
-                return null;
-            }
+            FileResult? result = await Device.InvokeOnMainThreadAsync(async () => await FilePicker.PickAsync(options));
+            return result;
+        }
+        catch (Exception)
+        {
+            // The user canceled or something went wrong
+            return null;
         }
     }
 }

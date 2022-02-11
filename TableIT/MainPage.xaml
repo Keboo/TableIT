@@ -44,6 +44,7 @@
                 UriSource="Compass.png" 
                 Width="150"
                 Height="150"
+                Margin="10"
                 Grid.Row="1" Grid.Column="0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"/>

@@ -1,43 +1,41 @@
 ﻿using Microsoft.Maui.Controls;
-using TableIT.Remote.ViewModels;
-using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
-using System;
+using System.Threading.Tasks;
+using TableIT.Remote.ViewModels;
 
-namespace TableIT.Remote.Views
+namespace TableIT.Remote.Views;
+
+public partial class ImagesPage : ContentPage
 {
-    public partial class ImagesPage : ContentPage
+    private ImagesPageViewModel ViewModel { get; }
+
+    public ImagesPage(ImagesPageViewModel viewModel)
     {
-        private ImagesPageViewModel ViewModel { get; }
+        BindingContext = ViewModel = viewModel;
+        InitializeComponent();
+        ViewModel.DisplayPrompt += ViewModel_DisplayPrompt;
+    }
 
-        public ImagesPage(ImagesPageViewModel viewModel)
+    private Task<string?> ViewModel_DisplayPrompt()
+    {
+        if (Dispatcher.IsDispatchRequired)
         {
-            BindingContext = ViewModel = viewModel;
-            InitializeComponent();
-            ViewModel.DisplayPrompt += ViewModel_DisplayPrompt;
+            return Dispatcher.DispatchAsync(ViewModel_DisplayPrompt);
         }
+        return DisplayPromptAsync("Image name", "Enter the name of the image");
+    }
 
-        private Task<string?> ViewModel_DisplayPrompt()
-        {
-            if (Dispatcher.IsDispatchRequired)
-            {
-                return Dispatcher.DispatchAsync(ViewModel_DisplayPrompt);
-            }
-            return DisplayPromptAsync("Image name", "Enter the name of the image");
-        }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await ViewModel.LoadImages(false);
+    }
 
-        protected override async void OnAppearing()
+    private void OnItemTapped(object sender, ItemTappedEventArgs e)
+    {
+        if (e.Item is ImageViewModel imageViewModel)
         {
-            base.OnAppearing();
-            await ViewModel.LoadImages();
-        }
-
-        private void OnItemTapped(object sender, ItemTappedEventArgs e)
-        {
-            if (e.Item is ImageViewModel imageViewModel)
-            {
-                ViewModel.OnItemSelected(imageViewModel);
-            }
+            ViewModel.OnItemSelected(imageViewModel);
         }
     }
 }

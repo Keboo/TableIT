@@ -39,6 +39,7 @@ internal class ImageManager
             
             foreach (var item in data)
             {
+                item.IsCurrent = false;
                 keyed[item.Id] = item;
             }
             if (!keyed.TryGetValue(id, out var resourceData))
