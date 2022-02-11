@@ -125,16 +125,18 @@ public static class ResourceFunctions
         try
         {
             IFormCollection form = await req.ReadFormAsync();
+
+            if (form.Files.Count == 0) return new NoContentResult();
             IFormFile file = form.Files["file"];
 
             CloudBlobClient blobClient = account.CreateCloudBlobClient();
             var container = blobClient.GetContainerReference("resources");
             CloudBlockBlob blob = container.GetBlockBlobReference(file.FileName + Guid.NewGuid().ToString());
             await blob.UploadFromStreamAsync(file.OpenReadStream());
-            blob.Metadata["DisplayName"] = file.Name;
+            blob.Metadata["DisplayName"] = file.FileName;
             blob.SetMetadata();
 
-            return new JsonResult(new Resource(blob.Name, file.Name, blob.Properties.ETag));
+            return new JsonResult(new Resource(blob.Name, file.FileName, blob.Properties.ETag));
         }
         catch (Exception e)
         {
