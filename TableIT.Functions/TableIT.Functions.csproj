@@ -1,18 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <ApplicationInsightsResourceId>/subscriptions/9f47860f-97e3-418d-b0ac-c514c26274a4/resourceGroups/Games/providers/microsoft.insights/components/TableITAI</ApplicationInsightsResourceId>
     <UserSecretsId>75cb010f-f6e4-4d5d-ad05-47be5103b864</UserSecretsId>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--<EmbedRazorGenerateSources>true</EmbedRazorGenerateSources>-->
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.20.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.2" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.6.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
+    <!--<PackageReference Include="RazorLight" Version="2.0.0-rc.4" />-->
     <PackageReference Include="SkiaSharp" Version="2.80.3" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.80.3" />
   </ItemGroup>
