@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿#nullable enable
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -24,6 +25,11 @@ public class TableItHub : ServerlessHub
         {
             claims = GetClaims(authHeader);
             userName = claims.FirstOrDefault(x => x.Type == TableIdClaimType)?.Value;
+        }
+        else if (req.Query.TryGetValue(TableIdClaimType, out var tableId) && 
+            !string.IsNullOrWhiteSpace(tableId))
+        {
+            userName = tableId;
         }
 
         logger.LogInformation($"{nameof(Negotiate)}: claims {string.Join(",", claims.Select(x => $"[{x.Type}, {x.Value}]"))}");
