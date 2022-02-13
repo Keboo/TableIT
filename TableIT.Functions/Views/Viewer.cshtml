@@ -1,0 +1,54 @@
+﻿@using TableIT.Functions.ViewModels
+@model ViewerViewModel;
+<!DOCTYPE html>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title>TableIT Viewer </title>  
+<style>
+body {  
+  font-family: Calibri, Helvetica, sans-serif;
+  background-color: #202020;
+  color: #DDDDDD;
+}
+</style>
+</head> 
+<body>
+    Hello viewer:
+    Resource is @Model.ResourceId
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+<script type="text/javascript">
+window.addEventListener('load', (event) => {
+    console.log('The page has fully loaded');
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("https://tableitfunctions.azurewebsites.net/api")
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+    async function start() {
+        try {
+            await connection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.log(err);
+            setTimeout(start, 5000);
+        }
+    };
+
+    connection.onclose(async () => {
+        await start();
+    });
+
+    // Start the connection.
+    start();
+});
+</script>
+</html>

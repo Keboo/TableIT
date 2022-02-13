@@ -60,7 +60,7 @@ public class ImageDetailsPageViewModel : ObservableObject, IQueryAttributable
     {
         IsLoading = true;
         if (query.TryGetQueryParamter("imageId", out string? imageId) &&
-            await ImageManager.FindImage(imageId) is { } remoteImage)
+            await ImageManager.FindImage(Uri.UnescapeDataString(imageId)) is { } remoteImage)
         {
             RemoteImage = await ImageManager.LoadImage(remoteImage);
         }

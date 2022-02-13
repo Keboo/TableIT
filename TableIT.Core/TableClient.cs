@@ -236,7 +236,7 @@ public partial class TableClient : IAsyncDisposable
         }, null);
     }
 
-    public async Task<TResponse?> SendRequestAsync<TRequest, TResponse>(TRequest request)
+    public async Task<TResponse?> SendRequestAsync<TRequest, TResponse>(TRequest request, TimeSpan? cancelAfter = null)
         where TResponse : class
     {
         Guid groupId = Guid.NewGuid();
@@ -248,7 +248,7 @@ public partial class TableClient : IAsyncDisposable
             Debug.WriteLine($"{DateTime.Now.TimeOfDay} timeout {request}");
             tcs.TrySetCanceled();
         });
-        long messageTimeout = (long)Timeout.TotalMilliseconds;
+        long messageTimeout = (long)(cancelAfter ?? Timeout).TotalMilliseconds;
         using IDisposable unregister = Register<TResponse>(response =>
         {
             Debug.WriteLine($"{DateTime.Now.TimeOfDay} response done {request}");

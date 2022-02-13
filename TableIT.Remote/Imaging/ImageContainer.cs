@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using SkiaSharp.Views.Maui.Controls;
 using System;
 
 namespace TableIT.Remote.Imaging
@@ -17,7 +18,7 @@ namespace TableIT.Remote.Imaging
         {
             var pinchGesture = new PinchGestureRecognizer();
             pinchGesture.PinchUpdated += OnPinchUpdated;
-            GestureRecognizers.Add(pinchGesture);
+            //GestureRecognizers.Add(pinchGesture);
             var panGesture = new PanGestureRecognizer();
             panGesture.PanUpdated += OnPanUpdated;
             GestureRecognizers.Add(panGesture);
@@ -110,6 +111,10 @@ namespace TableIT.Remote.Imaging
                     // Store the translation applied during the pan
                     //x = Content.TranslationX;
                     //y = Content.TranslationY;
+                    if (Content is SKCanvasView canvas)
+                    {
+                        canvas.InvalidateSurface();
+                    }
                     break;
             }
         }

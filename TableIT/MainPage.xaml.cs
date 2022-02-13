@@ -27,27 +27,31 @@ public sealed partial class MainPage : Page
         Task.Run(async () =>
         {
             await ConnectToServer();
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            () =>
-            {
-                Status.Text = "Loading images...";
-            });
+
             if (_client is { } client)
             {
+                await SetStatusMessage("Loading images...");
+
                 var imageManager = _imageManager = new(client, new ResourcePersistence());
                 if (await imageManager.Load() is { } imageStream)
                 {
                     await LoadImage(imageManager, imageStream);
                 }
+
+                await SetStatusMessage("Done");
             }
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            () =>
-            {
-                Status.Text = "Done";
-            });
 
         });
 
+    }
+
+    private async Task SetStatusMessage(string message)
+    {
+        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+        () =>
+        {
+            Status.Text = message;
+        });
     }
 
     private async void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -74,11 +78,8 @@ public sealed partial class MainPage : Page
 
     private async Task ConnectToServer()
     {
-        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            () =>
-            {
-                Status.Text = "Connecting...";
-            });
+        await SetStatusMessage("Connecting...");
+
         try
         {
 #if DEBUG
@@ -184,60 +185,6 @@ public sealed partial class MainPage : Page
                 }
             });
 
-            //_client.RegisterTableMessage<SetImageMessage>(async message =>
-            //{
-            //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            //    () =>
-            //    {
-            //        Status.Text = $"Setting image {message.ImageId}";
-            //    });
-            //    if (await _imageManager.SetCurrentImage(message.ImageId) is { } image)
-            //    {
-            //        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            //        async () =>
-            //        {
-            //            Image.Source = await image.GetImageSource();
-            //        });
-            //    }
-            //});
-
-            //_client.Handle<ListImagesRequest, ListImagesResponse>(async message =>
-            //{
-            //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            //    () =>
-            //    {
-            //        Status.Text = $"Listing images";
-            //    });
-            //    var response = new ListImagesResponse();
-            //    await foreach (Image image in _imageManager.GetImages())
-            //    {
-            //        response.Images.Add(new ImageData
-            //        {
-            //            Id = image.Id,
-            //            Name = image.Name 
-            //        });
-            //    }
-            //    return response;
-            //});
-
-            //_client.Handle<GetImageRequest, GetImageResponse>(async message =>
-            //{
-            //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            //    () =>
-            //    {
-            //        Status.Text = $"Getting image {message.ImageId}";
-            //    });
-            //    var response = new GetImageResponse();
-            //    await foreach (Image image in _imageManager.GetImages())
-            //    {
-            //        if (image.Id == message.ImageId)
-            //        {
-            //            response.Base64Data = Convert.ToBase64String(await image.GetBytes(message.Width, message.Height));
-            //        }
-            //    }
-            //    return response;
-            //});
-
             _client.Handle<TablePingRequest, TablePingResponse>(async message =>
             {
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -258,11 +205,7 @@ public sealed partial class MainPage : Page
         }
         catch (Exception ex)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-            () =>
-            {
-                Status.Text = $"Error: {ex.Message}";
-            });
+            await SetStatusMessage($"Error: {ex.Message}");
         }
     }
 }

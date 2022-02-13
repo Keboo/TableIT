@@ -60,6 +60,7 @@ public class ImagesPageViewModel : ObservableObject
         {
             var images = (await ImageManager.LoadImages(true))
                 .Select(x => new ImageViewModel(x))
+                .OrderBy(vm => vm.Name)
                 .ToList();
             Images.Clear();
             foreach (var image in images)
