@@ -200,6 +200,7 @@ public sealed partial class MainPage : Page
             () =>
             {
                 UserId.Text = $"ID: {_client.UserId}";
+                ViewUrl.Text = $"https://tableit.keboo.dev/{_client.UserId}";
                 Status.Text = "Connected";
             });
         }

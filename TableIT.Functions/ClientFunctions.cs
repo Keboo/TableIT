@@ -40,4 +40,9 @@ internal class ClientFunctions
         };
     }
 
+    [FunctionName("ViewerRedirect")]
+    public static IActionResult ViewerRedirect(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "viewer/{tableid}")] HttpRequest req,
+        string tableId) => new RedirectResult($"{req.Scheme}://{req.Host}/api/viewer?tableid={tableId}", true);
+
 }
