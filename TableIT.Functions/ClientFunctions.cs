@@ -26,7 +26,7 @@ internal class ClientFunctions
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new());
             viewData.Model = new ViewerViewModel
             {
-                ResourceId = "My resource"
+                TableId = tableId
             };
             return new ViewResult()
             {

@@ -13,6 +13,13 @@ namespace TableIT.Core.Tests;
 public class TableClientTests
 {
     [Fact]
+    public async Task Foo()
+    {
+        await using var table = new TableClient(userId:"DEBUG1");
+        await table.StartAsync();
+    }
+
+    [Fact]
     public async Task CanSendZoomMessage()
     {
         await using var table = new TableClient();

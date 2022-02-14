@@ -2,6 +2,6 @@
 {
     public class ViewerViewModel
     {
-        public string ResourceId { get; set; }
+        public string TableId { get; set; }
     }
 }

@@ -36,7 +36,8 @@ namespace TableIT.Core
                 audience: audience,
                 subject: claims == null ? null : new ClaimsIdentity(claims),
                 expires: expire);
-            return JwtTokenHandler.WriteToken(token);
+            string rv = JwtTokenHandler.WriteToken(token);
+            return rv;
         }
     }
 }
