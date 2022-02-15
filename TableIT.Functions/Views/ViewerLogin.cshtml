@@ -1,52 +1,33 @@
-﻿<!DOCTYPE html>
-@*
+﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    ViewData["Title"] = "Viewer Login";
 }
-<!DOCTYPE html>   
-<html>   
-<head>  
-<meta name="viewport" content="width=device-width, initial-scale=1">  
-<title>TableIT Connect </title>  
+@section Styles {
 <style>
-body {  
-  font-family: Calibri, Helvetica, sans-serif;
-  background-color: #202020;
-  color: #DDDDDD;
-}
-button {
-    background-color: #2DB9FF;
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-}
-form {
-    border: 3px solid #FFC938;
-    text-align: center;
-}
- input[type=text] {
+
+    form {
+        border: 3px solid #FFC938;
+        text-align: center;
+    }
+
+    input[type=text] {
         width: 100%;
         margin: 8px 0;
         padding: 12px 20px;
         display: inline-block;
         text-align: center;
-    }  
-button:hover {
-    opacity: 0.7;
-}
-.container {
-    width: 80%;
-    padding: 10px;
-}
+    }
+
+    .container {
+        width: 80%;
+        padding: 10px;
+    }
 </style>
-</head> 
-<body>
-    <center>
-    <h1>TableIT Connect</h1> 
+}
+<center>
+    <h1>TableIT Connect</h1>
     <form>
         <div class="container">
             <label>Enter the table ID to connect to:</label>
@@ -54,16 +35,19 @@ button:hover {
             <button type="submit">Connect</button>
         </div>
     </form>
-    </center>
-</body>
+</center>
+
+@section Scripts {
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
 <script type="text/javascript">
-$(function() {
-  $('form').submit(function(){
-      var id = $('tableid').value;
-      window.location = "http://localhost:7071/api/viewer/" + id;
-    return false;
-  });
-});
+    $(function() {
+      $('form').submit(function(){
+          var id = $('tableid').value;
+          window.location = "http://localhost:7071/api/viewer/" + id;
+        return false;
+      });
+    });
 </script>
-</html>
+}

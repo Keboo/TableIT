@@ -24,7 +24,7 @@ namespace TableIT.Core
                 };
             }
 
-            return GenerateAccessTokenInternal(audience, claims, lifetime ?? TimeSpan.FromHours(1));
+            return GenerateAccessTokenInternal(audience, claims, lifetime ?? TimeSpan.FromHours(5));
         }
 
         private static string GenerateAccessTokenInternal(string? audience, IEnumerable<Claim>? claims, TimeSpan lifetime)

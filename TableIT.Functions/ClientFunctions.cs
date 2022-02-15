@@ -12,17 +12,13 @@ namespace TableIT.Functions;
 internal class ClientFunctions
 {
     [FunctionName("Viewer")]
-    public static async Task<IActionResult> ViewerLogin(
+    public static IActionResult ViewerLogin(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "viewer")] HttpRequest req,
         ILogger log)
     {
         if (req.Query.TryGetValue("tableid", out var tableId) &&
             !string.IsNullOrWhiteSpace(tableId))
         {
-            //var client = new TableClient(userId: tableId);
-            //await client.StartAsync();
-            //var config = await client.GetTableConfiguration();
-
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new());
             viewData.Model = new ViewerViewModel
             {
@@ -45,4 +41,13 @@ internal class ClientFunctions
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "viewer/{tableid}")] HttpRequest req,
         string tableId) => new RedirectResult($"{req.Scheme}://{req.Host}/api/viewer?tableid={tableId}", true);
 
+    [FunctionName("Upload")]
+    public static IActionResult Upload(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "upload")] HttpRequest req)
+    {
+        return new ViewResult()
+        {
+            ViewName = "~/Views/Upload.cshtml"
+        };
+    }
 }
