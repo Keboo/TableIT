@@ -82,11 +82,7 @@ public sealed partial class MainPage : Page
 
         try
         {
-#if DEBUG
-            _client = new TableClient(userId: "DEBUG1");
-#else
             _client = new TableClient();
-#endif
             _client.RegisterTableMessage<PanMessage>(async message =>
             {
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,

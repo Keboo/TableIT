@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -42,7 +43,8 @@ internal class ClientFunctions
         string tableId) => new RedirectResult($"{req.Scheme}://{req.Host}/api/viewer?tableid={tableId}", true);
 
     [FunctionName("Upload")]
-    public static IActionResult Upload(
+    [Authorize]
+    public static IActionResult UploadView(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "upload")] HttpRequest req)
     {
         return new ViewResult()
