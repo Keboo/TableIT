@@ -16,16 +16,16 @@ namespace TableIT.Remote
         {
             InitializeComponent();
 
-            Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewMapper.AppendToMapping(nameof(ScrollView.Orientation), (handler, view) =>
-            {
-                if (view.Orientation == ScrollOrientation.Both)
-                {
-#if ANDROID
-                    handler.NativeView.HorizontalScrollBarEnabled = true;
-                    handler.NativeView.VerticalScrollBarEnabled = true;
-#endif
-                }
-            });
+//            Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewMapper.AppendToMapping(nameof(ScrollView.Orientation), (handler, view) =>
+//            {
+//                if (view.Orientation == ScrollOrientation.Both)
+//                {
+//#if ANDROID
+//                    handler.NativeView.HorizontalScrollBarEnabled = true;
+//                    handler.NativeView.VerticalScrollBarEnabled = true;
+//#endif
+//                }
+//            });
 
             AppShell = appShell;
             ConnectPage = connectPage;

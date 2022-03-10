@@ -19,11 +19,11 @@
     <StackLayout Orientation="Horizontal">
       <Button Text="Select" Command="{Binding SelectCommand}"/>
     </StackLayout>
-    <Image x:Name="Canvas" GridLayout.Row="1"/>
+    <Image x:Name="Canvas" Grid.Row="1"/>
     <!--<skia:SKCanvasView x:Name="Canvas" PaintSurface="Canvas_PaintSurface" GridLayout.Row="1" />-->
     <ActivityIndicator IsVisible="{Binding IsLoading}"
                        IsRunning="{Binding IsLoading}"
-                       GridLayout.Row="1"
+                       Grid.Row="1"
                        VerticalOptions="Center" />
   </Grid>
 </ContentPage>

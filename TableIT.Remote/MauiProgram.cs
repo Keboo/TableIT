@@ -23,7 +23,7 @@ namespace TableIT.Remote
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 })
                 .ConfigureEssentials();
-
+                
             builder.Services.AddTransient<AppShell>();
             AddFactory<AppShell>(builder.Services);
 

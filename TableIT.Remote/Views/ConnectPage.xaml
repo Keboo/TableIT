@@ -32,7 +32,7 @@
       </Entry>
       <Button Text="Connect" 
               Command="{Binding ConnectCommand}"
-              GridLayout.Column="1"/>
+              Grid.Column="1"/>
       <Label Text="{Binding ErrorMessage}" 
              TextColor="{DynamicResource ErrorForeground}" 
              HorizontalOptions="Center"/>

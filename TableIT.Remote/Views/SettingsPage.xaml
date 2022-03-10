@@ -24,40 +24,41 @@
     </Grid.RowDefinitions>
 
     <Label Text="{x:Binding TableId, StringFormat='Table ID: {0}'}" 
-             GridLayout.Row="0" GridLayout.Column="0" GridLayout.ColumnSpan="2"/>
+           Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
 
     <Label Text="Compass Visible" 
            VerticalOptions="Center"
-           GridLayout.Row="1" GridLayout.Column="0"/>
+           Grid.Row="1"
+           Grid.Column="0"/>
     <CheckBox IsChecked="{Binding IsCompassShown}" 
-              GridLayout.Row="1" GridLayout.Column="1"/>
+              Grid.Row="1" Grid.Column="1"/>
 
     <Label Text="Compass Dark" 
            VerticalOptions="Center"
-           GridLayout.Row="2" GridLayout.Column="0"/>
+           Grid.Row="2" Grid.Column="0"/>
     <CheckBox IsChecked="{Binding IsDarkColor}" 
-              GridLayout.Row="2" GridLayout.Column="1"/>
+              Grid.Row="2" Grid.Column="1"/>
 
     <Label Text="Compass Size" 
            VerticalOptions="Center"
-           GridLayout.Row="3" GridLayout.Column="0"/>
+           Grid.Row="3" Grid.Column="0"/>
     <Entry Text="{x:Binding CompassSize}"
            TextColor="{DynamicResource Foreground}"
            Keyboard="Numeric"
-           GridLayout.Row="3" GridLayout.Column="1"/>
+           Grid.Row="3" Grid.Column="1"/>
 
     <Button Text="Save"
             Margin="30"
             Command="{x:Binding SaveCommand}"
-            GridLayout.Row="5" GridLayout.Column="0"
-            GridLayout.ColumnSpan="2" 
+            Grid.Row="5" Grid.Column="0"
+            Grid.ColumnSpan="2" 
             HorizontalOptions="Fill"/>
 
 
     <ActivityIndicator IsVisible="{x:Binding IsLoading}"
                        IsRunning="{x:Binding IsLoading}" 
-                       GridLayout.Row="0" GridLayout.Column="0"
-                       GridLayout.RowSpan="4" GridLayout.ColumnSpan="2"
+                       Grid.Row="0" Grid.Column="0"
+                       Grid.RowSpan="4" Grid.ColumnSpan="2"
                        VerticalOptions="Center"
                        HorizontalOptions="Center"/>
   </Grid>

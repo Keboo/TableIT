@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using SkiaSharp.Views.Maui.Controls;
 using System;
@@ -76,8 +77,8 @@ namespace TableIT.Remote.Imaging
                 double targetY = yOffset - (originY * Content.Height) * (currentScale - startScale);
 
                 // Apply translation based on the change in origin.
-                Content.TranslationX = targetX.Clamp(-Content.Width * (currentScale - 1), 0);
-                Content.TranslationY = targetY.Clamp(-Content.Height * (currentScale - 1), 0);
+                //Content.TranslationX = targetX.Clamp(-Content.Width * (currentScale - 1), 0);
+                //Content.TranslationY = targetY.Clamp(-Content.Height * (currentScale - 1), 0);
 
                 // Apply scale factor.
                 Content.Scale = currentScale;

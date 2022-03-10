@@ -23,32 +23,32 @@
             Command="{Binding PanCommand}"
             CommandParameter="{x:Static vm:PanDirection.Up}"
             ImageSource="arrow_up.svg"
-            GridLayout.Column="1"
-            GridLayout.Row="0" />
+            Grid.Column="1"
+            Grid.Row="0" />
     <Button x:Name="RightButton"
             Command="{Binding PanCommand}"
             CommandParameter="{x:Static vm:PanDirection.Right}"
             ImageSource="arrow_right.svg"
-            GridLayout.Column="2"
-            GridLayout.Row="1"/>
+            Grid.Column="2"
+            Grid.Row="1"/>
     <Button x:Name="DownButton"
             Command="{Binding PanCommand}"
             CommandParameter="{x:Static vm:PanDirection.Down}"
             ImageSource="arrow_down.svg"
-            GridLayout.Column="1"
-            GridLayout.Row="2"/>
+            Grid.Column="1"
+            Grid.Row="2"/>
     <Button x:Name="LeftButton"
             Command="{Binding PanCommand}"
             CommandParameter="{x:Static vm:PanDirection.Left}"
             ImageSource="arrow_left.svg"
-            GridLayout.Column="0"
-            GridLayout.Row="1"/>
+            Grid.Column="0"
+            Grid.Row="1"/>
 
     <Button Command="{Binding ZoomCommand}"
             CommandParameter="-0.1"
             ImageSource="magnify_minus.svg"
-            GridLayout.Column="0"
-            GridLayout.Row="4" />
+            Grid.Column="0"
+            Grid.Row="4" />
     <!--<Button x:Name="Reset"
               ImageSource="reset.svg"
               GridLayout.Column="1"
@@ -56,7 +56,7 @@
     <Button Command="{Binding ZoomCommand}"
             CommandParameter="0.1"
             ImageSource="magnify_plus.svg"
-            GridLayout.Column="2"
-            GridLayout.Row="4"/>
+            Grid.Column="2"
+            Grid.Row="4"/>
   </Grid>
 </ContentPage>

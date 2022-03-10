@@ -16,11 +16,11 @@
 
     <Button Text="Import"
             Command="{x:Binding ImportCommand}" 
-            GridLayout.Row="0" 
+            Grid.Row="0" 
             Margin="10"/>
 
     <ListView ItemsSource="{x:Binding Images}" 
-              GridLayout.Row="1" 
+              Grid.Row="1" 
               RefreshCommand="{x:Binding RefreshCommand}"
               IsPullToRefreshEnabled="True"
               SelectionMode="None"
@@ -46,13 +46,13 @@
                 <ColumnDefinition />
               </Grid.ColumnDefinitions>
               <Image Source="{x:Binding Image}" Margin="5"/>
-              <Label Text="{x:Binding Name}" GridLayout.Column="1" 
+              <Label Text="{x:Binding Name}" Grid.Column="1" 
                      VerticalOptions="Center"
                      TextColor="{DynamicResource Foreground}"/>
               <ProgressBar IsVisible="{x:Binding Progress, Converter={StaticResource NotNegativeValueConverter}}"
                            Progress="{x:Binding Progress}"
-                           GridLayout.Column="0"
-                           GridLayout.ColumnSpan="2"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
                            VerticalOptions="EndAndExpand"/>
             </Grid>
           </ViewCell>
