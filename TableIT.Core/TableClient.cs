@@ -19,6 +19,8 @@ public partial class TableClient : IAsyncDisposable
     private ResourceManager ResourceManager { get; }
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(5);
 
+    public string Endpoint { get; }
+
     public string UserId { get; }
 
     public TableClient(string? endpoint = null, string? userId = null)
@@ -31,7 +33,7 @@ public partial class TableClient : IAsyncDisposable
         }
 #endif
         UserId = userId ?? GenerateUserId();
-        endpoint ??= "https://tableitfunctions.azurewebsites.net";
+        Endpoint = endpoint ??= "https://tableitfunctions.azurewebsites.net";
         ResourceManager = new ResourceManager(endpoint);
 
         _connection = new HubConnectionBuilder()

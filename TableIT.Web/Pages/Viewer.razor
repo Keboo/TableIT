@@ -1,0 +1,97 @@
+﻿@page "/viewer"
+@page "/viewer/{TableId}"
+@layout EmptyLayout
+@using Microsoft.AspNetCore.SignalR.Client
+@using TableIT.Core
+@using TableIT.Web.Data
+
+<div style="visibility:@(Client is null ? "collapse" : "visible")">
+    <p>@status</p>
+    <img src="@imageSource" />
+</div>
+<center style="visibility: @(Client is null ? "visible" : "collapse")">
+    <h1>TableIT Connect</h1>
+    <EditForm Model="@Model" OnValidSubmit="@OnConnect">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="tableId" @bind-Value="Model.TableId" style="text-transform: uppercase;" spellcheck="false" placeholder="Table ID"/>
+
+        <button type="submit">Connect</button>
+    </EditForm>
+    @*<form>
+        <div class="container">
+            <label>Enter the table ID to connect to:</label>
+            <input type="text" placeholder="Table ID" name="tableid" required />
+            <InputText Value="@TableId" DisplayName="Table ID" spellcheck="false" />
+            <button type="submit" onclick="@OnConnect">Connect</button>
+        </div>
+    </form>*@
+</center>
+
+
+@code {
+    private TableClient? Client { get; set; }
+    private string imageSource = "";
+    private string status = "";
+    private ViewerModel Model { get; set; } = new();
+    [ParameterAttribute]
+    public string? TableId { get; set; }
+
+    private async Task OnConnect()
+    {
+        if (Client is { } client)
+        {
+            await client.DisposeAsync();
+        }
+        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+        Client = new TableClient(userId: Model.TableId!.ToUpperInvariant());
+        status = $"Connecting to table {Client.UserId}";
+        try
+        {
+            await Client.StartAsync();
+
+            if (!await Client.PingTable())
+            {
+                status = $"No table found at {Client.UserId}";
+                return;
+            }
+
+            status = "Getting table configuration";
+            if (await Client.GetTableConfiguration() is { } tableConfig)
+            {
+                if (!string.IsNullOrWhiteSpace(tableConfig.CurrentResourceId))
+                {
+                    imageSource = $"{Client.Endpoint}/api/resources/{tableConfig.CurrentResourceId}";
+                    status = "Done";
+                }
+                else
+                {
+                    status = "No current image";
+                }
+            }
+            else
+            {
+                status = $"Configuration failed to load from table {Client.UserId}";
+            }
+        }
+        catch(Exception e)
+        {
+            status = "ERROR: " + e.Message;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model.TableId = TableId;
+        await base.OnInitializedAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Client is { } client)
+        {
+            await client.DisposeAsync();
+        }
+    }
+}
