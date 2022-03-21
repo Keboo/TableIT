@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TableIT.Win (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TableIT.Win (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
