@@ -1,38 +1,15 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using System;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
-
 
 namespace TableIT.Win;
-
-
-
-public static class AppWindowExtensions
-{
-    public static AppWindow GetAppWindow(this Microsoft.UI.Xaml.Window window)
-    {
-        IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-        return GetAppWindowFromWindowHandle(windowHandle);
-    }
-
-    private static AppWindow GetAppWindowFromWindowHandle(IntPtr windowHandle)
-    {
-        WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-        return AppWindow.GetFromWindowId(windowId);
-    }
-}
-
 
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
@@ -78,6 +55,7 @@ public sealed partial class MainWindow : Window
 
     private async Task SetStatusMessage(string message)
     {
+        await Task.Yield();
         DispatcherQueue.TryEnqueue(
         () =>
         {
@@ -113,7 +91,7 @@ public sealed partial class MainWindow : Window
         try
         {
             _client = new TableClient();
-            _client.RegisterTableMessage<PanMessage>(async message =>
+            _client.RegisterTableMessage<PanMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -133,7 +111,7 @@ public sealed partial class MainWindow : Window
                 });
             });
 
-            _client.RegisterTableMessage<ZoomMessage>(async message =>
+            _client.RegisterTableMessage<ZoomMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -152,6 +130,7 @@ public sealed partial class MainWindow : Window
                 });
 
                 if (_imageManager is { } imageManager &&
+                    message is { ImageId: not null, Version: not null } &&
                     await imageManager.GetImage(message.ImageId, message.Version) is { } imageStream)
                 {
                     await LoadImage(imageManager, imageStream);
@@ -191,7 +170,7 @@ public sealed partial class MainWindow : Window
                 };
             });
 
-            _client.RegisterTableMessage<SetTableConfigurationMessage>(async message =>
+            _client.RegisterTableMessage<SetTableConfigurationMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
@@ -209,13 +188,35 @@ public sealed partial class MainWindow : Window
                 }
             });
 
-            _client.Handle<TablePingRequest, TablePingResponse>(async message =>
+            _client.Handle<TablePingRequest, TablePingResponse>(message =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
                     Status.Text = $"New client connected";
                 });
-                return new TablePingResponse();
+                return Task.FromResult<TablePingResponse?>(new TablePingResponse());
+            });
+
+            _client.RegisterTableMessage<RotateMessage>(message =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    Status.Text = $"Rotate message {message.RotationDegrees}";
+                });
+
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    double currentRotation = (Image.RenderTransform as RotateTransform)?.Angle ?? 0;
+
+                    if (message.RotationDegrees is { } rotationDegrees)
+                    {
+                        Image.RenderTransform = new RotateTransform() { Angle = currentRotation += rotationDegrees };
+                    }
+                    else
+                    {
+                        Image.RenderTransform = null;
+                    }
+                });
             });
 
             await _client.StartAsync();

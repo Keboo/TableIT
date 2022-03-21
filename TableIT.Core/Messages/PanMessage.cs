@@ -1,8 +1,8 @@
-﻿namespace TableIT.Core.Messages
+﻿namespace TableIT.Core.Messages;
+
+public class PanMessage
 {
-    public class PanMessage
-    {
-        public int? HorizontalOffset { get; set; }
-        public int? VerticalOffset { get; set; }
-    }
+    public int? HorizontalOffset { get; set; }
+    public int? VerticalOffset { get; set; }
 }
+

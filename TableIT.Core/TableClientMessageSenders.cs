@@ -24,6 +24,14 @@ namespace TableIT.Core
             });
         }
 
+        public static async Task SendRotate(this TableClient client, int? degrees)
+        {
+            await client.SendTableMessage(new RotateMessage
+            {
+                RotationDegrees = degrees
+            });
+        }
+
         public static async Task<bool> PingTable(this TableClient client)
         {
             if (await client.SendRequestAsync<TablePingRequest, TablePingResponse>(new TablePingRequest(), TimeSpan.FromSeconds(3)) is not null)

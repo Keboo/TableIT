@@ -13,13 +13,6 @@ namespace TableIT.Core.Tests;
 public class TableClientTests
 {
     [Fact]
-    public async Task Foo()
-    {
-        await using var table = new TableClient(userId:"DEBUG1");
-        await table.StartAsync();
-    }
-
-    [Fact]
     public async Task CanSendZoomMessage()
     {
         await using var table = new TableClient();
@@ -210,6 +203,22 @@ public class TableClientTests
         Assert.Equal(42, config.Compass.Size);
         Assert.Equal(0xFF0F0D0E, config.Compass.Color);
 
+    }
+
+    [Fact]
+    public async Task CanSendRotateMessage()
+    {
+        await using var table = new TableClient();
+        await table.StartAsync();
+        await using var client = new TableClient(userId: table.UserId);
+        await client.StartAsync();
+
+        Task<RotateMessage> getMessage = table.WaitForTableMessage<RotateMessage>();
+
+        await client.SendRotate(90);
+        RotateMessage message = await getMessage;
+
+        Assert.Equal(90, message.RotationDegrees);
     }
 }
 

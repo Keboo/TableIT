@@ -1,7 +1,6 @@
-﻿namespace TableIT.Core.Messages
+﻿namespace TableIT.Core.Messages;
+
+public class ZoomMessage
 {
-    public class ZoomMessage
-    {
-        public float ZoomAdjustment { get; set; }
-    }
+    public float ZoomAdjustment { get; set; }
 }
