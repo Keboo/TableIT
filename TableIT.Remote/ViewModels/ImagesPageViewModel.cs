@@ -68,10 +68,7 @@ public class ImagesPageViewModel : ObservableObject
                 Images.Add(image);
             }
 
-            foreach (ImageViewModel image in images)
-            {
-                await LoadThumbnail(image);
-            }
+            await Task.WhenAll(images.Select(LoadThumbnail));
         }
         IsLoading = false;
     }

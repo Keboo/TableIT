@@ -130,7 +130,7 @@ public sealed partial class MainWindow : Window
                 });
 
                 if (_imageManager is { } imageManager &&
-                    message is { ImageId: not null, Version: not null } &&
+                    message is { ImageId: not null } &&
                     await imageManager.GetImage(message.ImageId, message.Version) is { } imageStream)
                 {
                     await LoadImage(imageManager, imageStream);

@@ -10,6 +10,7 @@ public class ControlPageViewModel : ObservableObject
 {
     public IRelayCommand<PanDirection> PanCommand { get; }
     public IRelayCommand<string> ZoomCommand { get; }
+    public IRelayCommand RotateCommand { get; }
 
     private TableClientManager ClientManager { get; }
     public IRelayCommand ConnectCommand { get; }
@@ -33,6 +34,7 @@ public class ControlPageViewModel : ObservableObject
         PanCommand = new AsyncRelayCommand<PanDirection>(OnPan);
         ZoomCommand = new AsyncRelayCommand<string>(OnZoom);
         ConnectCommand = new AsyncRelayCommand(OnConnect);
+        RotateCommand = new AsyncRelayCommand(OnRotate);
         ClientManager = clientManager;
     }
 
@@ -64,6 +66,14 @@ public class ControlPageViewModel : ObservableObject
                     await client.SendPan(null, 20);
                     break;
             }
+        }
+    }
+
+    private async Task OnRotate()
+    {
+        if (ClientManager.GetClient() is { } client)
+        {
+            await client.SendRotate(90);
         }
     }
 

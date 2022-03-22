@@ -54,6 +54,7 @@
 	  <None Remove="Resources\Images\arrow_down.svg" />
 	  <None Remove="Resources\Images\arrow_left.svg" />
 	  <None Remove="Resources\Images\arrow_right.svg" />
+	  <None Remove="Resources\Images\rotate.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

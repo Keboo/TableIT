@@ -31,15 +31,11 @@
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ImageViewModel">
           <ViewCell>
-            <ViewCell.ContextActions>
-              <MenuItem Text="Select" 
-                        Command="{Binding BindingContext.SelectCommand, Source={x:Reference List}}" 
-                        CommandParameter="{x:Binding .}" />
+            <!--<ViewCell.ContextActions>
+              <MenuItem Text="Select" />
               <MenuItem Text="Delete" 
-                        Command="{Binding BindingContext.DeleteCommand, Source={x:Reference List}}" 
-                        CommandParameter="{x:Binding .}"
                         IsDestructive="True" />
-            </ViewCell.ContextActions>
+            </ViewCell.ContextActions>-->
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />
