@@ -238,10 +238,12 @@ public sealed partial class MainWindow : Window
     {
         if (AppWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
         {
+            Root.Margin = new Thickness(0, 0, 0, 0);
             AppWindow.SetPresenter(AppWindowPresenterKind.Default);
         }
         else
         {
+            Root.Margin = new Thickness(0, 5, 0, 0);
             AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
         }
     }
