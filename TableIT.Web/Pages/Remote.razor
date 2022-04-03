@@ -1,0 +1,129 @@
+﻿@page "/remote"
+@page "/remote/{TableId}"
+@using System.Security.Claims
+@using Azure.Identity
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@using TableIT.Core
+@using TableIT.Web.Data
+@*@layout EmptyLayout*@
+
+
+<div style="visibility:@(Client is null ? "collapse" : "visible")">
+    <p>@Status</p>
+
+    <div class="container">
+        <div class="row">
+            <div class="col" />
+            <div class="col">
+                <button @onclick="MoveUp">Up</button>
+            </div>
+            <div class="col" />
+        </div>
+        <div class="row">
+            <div class="col">
+                <button @onclick="MoveLeft">Left</button>
+            </div>
+            <div class="col" />
+            <div class="col">
+                <button @onclick="MoveRight">Right</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" />
+            <div class="col">
+                <button @onclick="MoveDown">Down</button>
+            </div>
+            <div class="col" />
+        </div>
+
+        <div class="row">
+            <div class="col" />
+            <div class="col">
+                <button @onclick="MoveDown">Down</button>
+            </div>
+            <div class="col" />
+        </div>
+    </div>
+</div>
+<center style="visibility: @(Client is null ? "visible" : "collapse")">
+    <h1>TableIT Connect</h1>
+    <EditForm Model="@Model" OnValidSubmit="@OnConnect">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="tableId" @bind-Value="Model.TableId" style="text-transform: uppercase;" spellcheck="false" placeholder="Table ID" />
+
+        <button type="submit">Connect</button>
+    </EditForm>
+</center>
+
+@code {
+    private TableClient? Client { get; set; }
+    private string Status { get; set; } = "";
+    [ParameterAttribute]
+    public string? TableId { get; set; }
+    private RemoteModel Model { get; set; } = new();
+
+
+    private async Task MoveUp()
+    {
+        await Client.SendPan(null, -20);
+    }
+
+    private async Task MoveDown()
+    {
+        await Client.SendPan(null, 20);
+    }
+
+    private async Task MoveLeft()
+    {
+        await Client.SendPan(-20, null);
+    }
+
+    private async Task MoveRight()
+    {
+        await Client.SendPan(20, null);
+    }
+
+
+    private async Task OnConnect()
+    {
+        if (Client is { } client)
+        {
+            await client.DisposeAsync();
+        }
+        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+        Client = new TableClient(userId: Model.TableId!.ToUpperInvariant());
+        try
+        {
+            await Client.StartAsync();
+
+            if (!await Client.PingTable())
+            {
+                Status = $"No table found at {Client.UserId}";
+                return;
+            }
+
+            Status = "Connected";
+        }
+        catch (Exception e)
+        {
+            Status = "ERROR: " + e.Message;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model.TableId = TableId;
+        await base.OnInitializedAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Client is { } client)
+        {
+            await client.DisposeAsync();
+        }
+    }
+}
