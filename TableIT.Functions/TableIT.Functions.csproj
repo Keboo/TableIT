@@ -9,14 +9,14 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.20.0" />
     <!--<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.2" />-->
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.3" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.7.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.0" />
     <!--<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />-->
     <!--<PackageReference Include="RazorLight" Version="2.0.0-rc.4" />-->
     <PackageReference Include="SkiaSharp" Version="2.80.3" />
@@ -33,7 +33,7 @@
   </ItemGroup>
   <Target Name="CopyRequiredNativeAssets" AfterTargets="_FunctionsPostPublish">
     <ItemGroup>
-      <NativeAssetToCopy Include="$(PublishDir)runtimes\linux-x64\native\libSkiaSharp.so" />
+      <NativeAssetToCopy Include="$(PublishDir)bin\runtimes\linux-x64\native\libSkiaSharp.so" />
     </ItemGroup>
     <Copy SourceFiles="@(NativeAssetToCopy)" DestinationFolder="$(PublishDir)bin" />
   </Target>

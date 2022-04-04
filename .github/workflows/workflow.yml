@@ -30,7 +30,7 @@ jobs:
         working-directory: TableIT.Core
 
       - name: 'Build Functions App'
-        run: dotnet build TableIT.Functions.csproj --configuration Release --output ../func-output
+        run: dotnet publish TableIT.Functions.csproj --configuration Release --output ../func-output
         working-directory: TableIT.Functions
 
       - name: Build Web App
