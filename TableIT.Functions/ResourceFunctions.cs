@@ -39,12 +39,12 @@ public static class ResourceFunctions
                 }
                 else if (height is not null)
                 {
-                    int thumbnailWidth = (int)((bitmap.Height / (double)bitmap.Width) * height.Value);
+                    int thumbnailWidth = (int)((bitmap.Width / (double)bitmap.Height) * height.Value);
                     imageInfo = new SKImageInfo(thumbnailWidth, height.Value);
                 }
                 else //if (width is not null)
                 {
-                    int thumbnailHeight = (int)((bitmap.Width / (double)bitmap.Height) * width.Value);
+                    int thumbnailHeight = (int)((bitmap.Height / (double)bitmap.Width) * width.Value);
                     imageInfo = new SKImageInfo(width.Value, thumbnailHeight);
                 }
                 using var resized = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
