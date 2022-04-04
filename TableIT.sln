@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Functions", "TableI
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9546D34F-87F8-4CF9-AB70-BB1AD5DCBA14}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\master_tableitfunctions.yml = .github\workflows\master_tableitfunctions.yml
+		.github\workflows\workflow.yml = .github\workflows\workflow.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Core.Tests", "TableIT.Core.Tests\TableIT.Core.Tests.csproj", "{F07C04CF-358B-4F64-ABE6-0D9291095F4A}"
@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Web", "TableIT.Web\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Web.Classic", "TableIT.Web.Classic\TableIT.Web.Classic.csproj", "{E397AAA5-05A3-45C7-9DEE-F2BBEA710D5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableIT.Win", "TableIT.Win\TableIT.Win.csproj", "{93A4A799-1BE5-432C-898C-A9E01B50214A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Win", "TableIT.Win\TableIT.Win.csproj", "{93A4A799-1BE5-432C-898C-A9E01B50214A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
