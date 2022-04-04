@@ -22,6 +22,7 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        Title = "Table IT";
         AppWindow = AppWindowExtensions.GetAppWindow(this);
         InitializeComponent();
 
@@ -48,7 +49,7 @@ public sealed partial class MainWindow : Window
             }
             catch (Exception e)
             {
-
+                await SetStatusMessage($"ERROR: {e.Message}");
             }
         });
     }
@@ -83,6 +84,9 @@ public sealed partial class MainWindow : Window
             ScrollViewer.ChangeView(resourceData?.HorizontalOffset ?? 0, resourceData?.VerticalOffset ?? 0, resourceData?.ZoomFactor ?? 1);
         });
     }
+
+    private Visibility IsNull(object? target)
+        => target is null ? Visibility.Visible : Visibility.Collapsed;
 
     private async Task ConnectToServer()
     {

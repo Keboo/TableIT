@@ -41,7 +41,11 @@
                   HorizontalScrollBarVisibility="Auto"
                   x:Name="ScrollViewer">
       <Grid>
-        <TextBlock Text="Load an image" FontSize="80" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <TextBlock Text="Load an image"
+                   FontSize="80"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Visibility="{x:Bind IsNull(Image.Source)}"/>
         <Image x:Name="Image" RenderTransformOrigin="0.5,0.5" />
       </Grid>
     </ScrollViewer>

@@ -5,45 +5,69 @@
 @using Azure.Storage.Blobs
 @using Azure.Storage.Blobs.Models
 @using TableIT.Core
+@using TableIT.Core.Messages
 @using TableIT.Web.Data
 @*@layout EmptyLayout*@
 
-
 <div style="visibility:@(Client is null ? "collapse" : "visible")">
-    <p>@Status</p>
-
     <div class="container">
         <div class="row">
-            <div class="col" />
-            <div class="col">
-                <button @onclick="MoveUp">Up</button>
-            </div>
-            <div class="col" />
-        </div>
-        <div class="row">
-            <div class="col">
-                <button @onclick="MoveLeft">Left</button>
-            </div>
-            <div class="col" />
-            <div class="col">
-                <button @onclick="MoveRight">Right</button>
+            <div class="col-6">
+                <p>@Status</p>
             </div>
         </div>
         <div class="row">
-            <div class="col" />
-            <div class="col">
-                <button @onclick="MoveDown">Down</button>
+            <div class="col-5">
+                <Virtualize Items="@Images">
+                    <div class="row">
+                        <div class="col">
+                            <a href="javascript: void(0)" @onclick="@(e => OpenImage(context.Id))">@context.Name</a>
+                        </div>
+                        <div class="col">
+                            <img src="@Client?.GetImageUrl(context.Id ?? "", height:30)" height="30"/>
+                        </div>
+                    </div>
+                </Virtualize>
             </div>
-            <div class="col" />
+            <div class="col-7">
+                <div class="row">
+                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="MoveUp">Up</button>
+                    </div>
+                    <div class="col" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button @onclick="MoveLeft">Left</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="Rotate">Rotate</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="MoveRight">Right</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="MoveDown">Down</button>
+                    </div>
+                    <div class="col" />
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <button @onclick="ZoomOut">Zoom Out</button>
+                    </div>
+                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="ZoomIn">Zoom In</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="row">
-            <div class="col" />
-            <div class="col">
-                <button @onclick="MoveDown">Down</button>
-            </div>
-            <div class="col" />
-        </div>
     </div>
 </div>
 <center style="visibility: @(Client is null ? "visible" : "collapse")">
@@ -64,28 +88,56 @@
     [ParameterAttribute]
     public string? TableId { get; set; }
     private RemoteModel Model { get; set; } = new();
-
+    private List<ImageData> Images { get; set; } = new();
 
     private async Task MoveUp()
     {
-        await Client.SendPan(null, -20);
+        await OnClient(client => client.SendPan(null, -20));
     }
 
     private async Task MoveDown()
     {
-        await Client.SendPan(null, 20);
+        await OnClient(client => client.SendPan(null, 20));
     }
 
     private async Task MoveLeft()
     {
-        await Client.SendPan(-20, null);
+        await OnClient(client => client.SendPan(-20, null));
     }
 
     private async Task MoveRight()
     {
-        await Client.SendPan(20, null);
+        await OnClient(client => client.SendPan(20, null));
     }
 
+    private async Task ZoomOut()
+    {
+        await OnClient(client => client.SendZoom(-0.1f));
+    }
+
+    private async Task ZoomIn()
+    {
+        await OnClient(client => client.SendZoom(0.1f));
+    }
+
+    private async Task Rotate()
+    {
+        await OnClient(client => client.SendRotate(90));
+    }
+
+    private async Task OpenImage(string? imageId)
+    {
+        if (string.IsNullOrWhiteSpace(imageId)) return;
+        await OnClient(client => client.SetCurrentImage(imageId!));
+    }
+
+    private async Task OnClient(Func<TableClient, Task> action)
+    {
+        if (Client is { } client)
+        {
+            await action(client);
+        }
+    }
 
     private async Task OnConnect()
     {
@@ -94,6 +146,8 @@
             await client.DisposeAsync();
         }
         if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+        Status = "Connecting";
+
         Client = new TableClient(userId: Model.TableId!.ToUpperInvariant());
         try
         {
@@ -102,10 +156,12 @@
             if (!await Client.PingTable())
             {
                 Status = $"No table found at {Client.UserId}";
+                await Client.DisposeAsync();
+                Client = null;
                 return;
             }
-
             Status = "Connected";
+            Images = (await Client.GetImages()).ToList();
         }
         catch (Exception e)
         {
