@@ -56,5 +56,5 @@ jobs:
         with:
             app-name: 'tableit'
             slot-name: 'production'
-            publish-profile: ${{ secrets.AzureAppService_PublishProfile_06a18bca030b4b6b903706558b212c19 }}
+            publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_307798C99CB54F0D8AC9892C475699EF }}
             package: ./web-output
