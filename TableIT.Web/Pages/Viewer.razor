@@ -3,11 +3,12 @@
 @layout EmptyLayout
 @using Microsoft.AspNetCore.SignalR.Client
 @using TableIT.Core
+@using TableIT.Core.Messages
 @using TableIT.Web.Data
 
 <div style="visibility:@(Client is null ? "collapse" : "visible")">
-    <p>@status</p>
-    <img src="@imageSource" />
+    <p>@Status</p>
+    <img src="@ImageSource" />
 </div>
 <center style="visibility: @(Client is null ? "visible" : "collapse")">
     <h1>TableIT Connect</h1>
@@ -24,11 +25,25 @@
 
 @code {
     private TableClient? Client { get; set; }
-    private string imageSource = "";
-    private string status = "";
+    public string ImageSource { get; set; } = "";
+    public string Status { get; set; } = "";
     private ViewerModel Model { get; set; } = new();
-    [ParameterAttribute]
+    [Parameter]
     public string? TableId { get; set; }
+
+    private void OnLoadImage(LoadImageMessage message)
+    {
+        Status = "Image changed";
+        if (message is { ImageId: not null } &&
+            Client?.GetImageUrl(message.ImageId) is { } url)
+        {
+            ImageSource = url;
+        }
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
 
     private async Task OnConnect()
     {
@@ -38,38 +53,47 @@
         }
         if (string.IsNullOrWhiteSpace(Model.TableId)) return;
         Client = new TableClient(userId: Model.TableId!.ToUpperInvariant());
-        status = $"Connecting to table {Client.UserId}";
+        Status = $"Connecting to table {Client.UserId}";
         try
         {
             await Client.StartAsync();
 
             if (!await Client.PingTable())
             {
-                status = $"No table found at {Client.UserId}";
+                Status = $"No table found at {Client.UserId}";
+                await InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await Client.DisposeAsync();
+                Client = null;
                 return;
             }
 
-            status = "Getting table configuration";
+            Client.RegisterTableMessage<LoadImageMessage>(OnLoadImage);
+
+            Status = "Getting table configuration";
             if (await Client.GetTableConfiguration() is { } tableConfig)
             {
                 if (!string.IsNullOrWhiteSpace(tableConfig.CurrentResourceId))
                 {
-                    imageSource = $"{Client.Endpoint}/api/resources/{tableConfig.CurrentResourceId}";
-                    status = "Done";
+                    ImageSource = Client.GetImageUrl(tableConfig.CurrentResourceId);
+                    Status = "Done";
                 }
                 else
                 {
-                    status = "No current image";
+                    Status = "No current image";
                 }
             }
             else
             {
-                status = $"Configuration failed to load from table {Client.UserId}";
+                Status = $"Configuration failed to load from table {Client.UserId}";
             }
         }
         catch(Exception e)
         {
-            status = "ERROR: " + e.Message;
+            Status = "ERROR: " + e.Message;
         }
     }
 
