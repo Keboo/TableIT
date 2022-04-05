@@ -81,6 +81,7 @@ public sealed partial class MainWindow : Window
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
             Image.Source = bitmapImage;
+            Message.Visibility = Visibility.Collapsed;
             ScrollViewer.ChangeView(resourceData?.HorizontalOffset ?? 0, resourceData?.VerticalOffset ?? 0, resourceData?.ZoomFactor ?? 1);
         });
     }
