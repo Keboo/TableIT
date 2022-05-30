@@ -46,7 +46,7 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    x:Name="Message"/>
-        <Image x:Name="Image" RenderTransformOrigin="0.5,0.5" Margin="500" />
+        <Image x:Name="Image" RenderTransformOrigin="0.5,0.5" />
       </Grid>
     </ScrollViewer>
 

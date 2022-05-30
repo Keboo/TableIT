@@ -81,6 +81,7 @@ public sealed partial class MainWindow : Window
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(imageStream.AsRandomAccessStream());
             Image.Source = bitmapImage;
+            Image.Margin = new Thickness(500);
             Message.Visibility = Visibility.Collapsed;
             ScrollViewer.ChangeView(resourceData?.HorizontalOffset ?? 0, resourceData?.VerticalOffset ?? 0, resourceData?.ZoomFactor ?? 1);
         });
@@ -131,7 +132,7 @@ public sealed partial class MainWindow : Window
                 DispatcherQueue.TryEnqueue(
                 () =>
                 {
-                    Status.Text = $"Loading image {message.ImageId}";
+                    Status.Text = $"Loading image...";
                 });
 
                 if (_imageManager is { } imageManager &&
