@@ -119,7 +119,7 @@
 
     private async Task ZoomFit()
     {
-        await OnClient(client => client.SendZoom(-0.1f));
+        await OnClient(client => client.SendZoomToFit());
     }
 
     private async Task ZoomIn()
