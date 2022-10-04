@@ -16,6 +16,14 @@ public static class TableClientMessageSenders
         });
     }
 
+    public static async Task SendZoomToFit(this TableClient client)
+    {
+        await client.SendTableMessage(new ZoomMessage
+        {
+            ZoomToFit = true
+        });
+    }
+
     public static async Task SendZoom(this TableClient client, float zoomAdjustment)
     {
         await client.SendTableMessage(new ZoomMessage

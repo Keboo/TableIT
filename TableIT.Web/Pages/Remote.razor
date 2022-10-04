@@ -60,7 +60,9 @@
                     <div class="col">
                         <button @onclick="ZoomOut">Zoom Out</button>
                     </div>
-                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="ZoomFit">Zoom to Fit</button>
+                    </div>
                     <div class="col">
                         <button @onclick="ZoomIn">Zoom In</button>
                     </div>
@@ -111,6 +113,11 @@
     }
 
     private async Task ZoomOut()
+    {
+        await OnClient(client => client.SendZoom(-0.1f));
+    }
+
+    private async Task ZoomFit()
     {
         await OnClient(client => client.SendZoom(-0.1f));
     }
