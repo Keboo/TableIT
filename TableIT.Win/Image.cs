@@ -9,7 +9,7 @@ using Windows.Storage;
 namespace TableIT.Win;
 public class Image
 {
-    public Image(StorageFile file, string id = null)
+    public Image(StorageFile file, string? id = null)
     {
         File = file;
         if (id is not null)
@@ -20,7 +20,7 @@ public class Image
 
     public string Id { get; } = Guid.NewGuid().ToString();
     public string Name => File.DisplayName;
-    public string Version { get; }
+    public string? Version { get; }
     public StorageFile File { get; }
 
     internal async Task<ImageSource> GetImageSource()

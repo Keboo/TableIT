@@ -1,10 +1,12 @@
-﻿using Microsoft.UI.Windowing;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
@@ -83,12 +85,50 @@ public sealed partial class MainWindow : Window
             Image.Source = bitmapImage;
             Image.Margin = new Thickness(500);
             Message.Visibility = Visibility.Collapsed;
-            ScrollViewer.ChangeView(resourceData?.HorizontalOffset ?? 0, resourceData?.VerticalOffset ?? 0, resourceData?.ZoomFactor ?? 1);
+            if (resourceData is not null)
+            {
+                ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData?.VerticalOffset, resourceData?.ZoomFactor);
+            }
         });
     }
 
-    private Visibility IsNull(object? target)
-        => target is null ? Visibility.Visible : Visibility.Collapsed;
+    private void ZoomToFit()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (Image.ActualWidth > 0 && Image.ActualHeight > 0)
+            {
+                
+                bool verticalOrientation = false;
+                if (Image.RenderTransform is RotateTransform rotate)
+                {
+                    var angle = rotate.Angle % 360;
+                    if (angle > 45 && angle < 135)
+                    {
+                        verticalOrientation = true;
+                    }
+                    else if (angle > 135 + 90 && angle < 135 + 180)
+                    {
+                        verticalOrientation = true;
+                    }
+                }
+                double verticalZoom;
+                double horizontalZoom;
+                if (verticalOrientation)
+                {
+                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualWidth;
+                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualHeight;
+                }
+                else
+                {
+                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualHeight;
+                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualWidth;
+                }
+                var zoom = (float)Math.Min(verticalZoom, horizontalZoom);
+                ScrollViewer.ChangeView(Image.Margin.Left * zoom, Image.Margin.Top * zoom, zoom);
+            }
+        });
+    }
 
     private async Task ConnectToServer()
     {
@@ -96,7 +136,14 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            _client = new TableClient();
+            if (Debugger.IsAttached)
+            {
+                _client = new TableClient(userId: "DEBUG1");
+            }
+            else 
+            {
+                _client = new TableClient();
+            }
             _client.RegisterTableMessage<PanMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(
@@ -122,8 +169,15 @@ public sealed partial class MainWindow : Window
                 DispatcherQueue.TryEnqueue(
                 () =>
                 {
-                    Status.Text = $"got zoom message {message.ZoomAdjustment}";
-                    ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + message.ZoomAdjustment);
+                    Status.Text = $"got zoom message {message.ZoomAdjustment} fit? {message.ZoomToFit}";
+                    if (message.ZoomToFit is { } fit && fit)
+                    {
+                        ZoomToFit();
+                    }
+                    else if (message.ZoomAdjustment is { } adjustment)
+                    {
+                        ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + adjustment);
+                    }
                 });
             });
 

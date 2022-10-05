@@ -28,7 +28,7 @@ internal class ImageManager
         return null;
     }
 
-    public async Task<Stream?> GetImage(string id, string version)
+    public async Task<Stream?> GetImage(string id, string? version)
     {
         if (await Client.GetImage(id, version) is { } current)
         {
