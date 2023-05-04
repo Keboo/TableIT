@@ -11,7 +11,7 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '6.0.x' # set this to the dotnet version to use
+  DOTNET_VERSION: '7.x' # set this to the dotnet version to use
 
 jobs:
   build-and-deploy:
@@ -29,10 +29,6 @@ jobs:
         run: dotnet build --configuration Release
         working-directory: TableIT.Core
 
-      - name: 'Build Functions App'
-        run: dotnet publish TableIT.Functions.csproj --configuration Release --output ../func-output
-        working-directory: TableIT.Functions
-
       - name: Build Web App
         run: dotnet build --configuration Release
         working-directory: TableIT.Web
@@ -40,15 +36,6 @@ jobs:
       - name: dotnet publish
         run: dotnet publish -c Release -o ../web-output
         working-directory: TableIT.Web
-
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
-        with:
-          app-name: 'TableITFunctions'
-          slot-name: 'Production'
-          package: './func-output'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FD23C6D2E7E545F6ADEB7A758CEFD59F }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp

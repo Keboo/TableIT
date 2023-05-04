@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <!--<TargetFramework>netstandard2.0</TargetFramework>-->
     <!--<TargetFrameworks>netstandard2.0;net6.0-android;net6.0-ios;net6.0-windows10.0.19041</TargetFrameworks>-->
-    <LangVersion>10</LangVersion>
+    <LangVersion>11</LangVersion>
     <Nullable>enable</Nullable>
 
     <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
@@ -18,10 +18,10 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Microsoft.Azure.SignalR.Management" Version="1.13.0" />-->
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.1" />
-    <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.30.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.5" />
+    <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
   </ItemGroup>
 </Project>
