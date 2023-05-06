@@ -6,10 +6,10 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Numerics;
 using System.Threading.Tasks;
 using TableIT.Core;
 using TableIT.Core.Messages;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace TableIT.Win;
 
@@ -303,6 +303,16 @@ public sealed partial class MainWindow : Window
         {
             Root.Margin = new Thickness(0, 5, 0, 0);
             AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        }
+    }
+
+    private void CopyTableId(object sender, RoutedEventArgs e)
+    {
+        if (_client?.UserId is { } tableId)
+        {
+            DataPackage dataPackage = new();
+            dataPackage.SetText(tableId);
+            Clipboard.SetContent(dataPackage);
         }
     }
 }
