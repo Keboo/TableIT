@@ -28,7 +28,7 @@
                             <a href="javascript: void(0)" @onclick="@(e => OpenImage(context.Id))">@context.Name</a>
                         </div>
                         <div class="col">
-                            <img src="@Client?.GetImageUrl(context.Id ?? "", height:30)" height="30"/>
+                            <img src="@Client?.GetImageUrl(context.Id ?? "", height:30)" height="30" />
                         </div>
                     </div>
                 </Virtualize>
@@ -71,8 +71,23 @@
                         <button @onclick="ZoomIn">Zoom In</button>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col">
+                    </div>
+                    <div class="col">
+                        <button @onclick="ApplyPreview">Apply Preview</button>
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <img src="@PreviewImageSource" width="100%" />
+                    </div>
+                </div>
             </div>
         </div>
+        
 
     </div>
 </div>
@@ -91,6 +106,8 @@
 @code {
     private TableClient? Client { get; set; }
     private string Status { get; set; } = "";
+    private string? PreviewImageId { get; set; }
+    public string PreviewImageSource { get; set; } = "";
     [ParameterAttribute]
     public string? TableId { get; set; }
     private RemoteModel Model { get; set; } = new();
@@ -136,10 +153,25 @@
         await OnClient(client => client.SendRotate(90));
     }
 
-    private async Task OpenImage(string? imageId)
+    private async Task ApplyPreview()
     {
+        if (string.IsNullOrWhiteSpace(PreviewImageId)) return;
+        await OnClient(client => client.SetCurrentImage(PreviewImageId));
+    }
+
+    private void OpenImage(string? imageId)
+    {
+        PreviewImageId = imageId;
         if (string.IsNullOrWhiteSpace(imageId)) return;
-        await OnClient(client => client.SetCurrentImage(imageId!));
+        if (Client?.GetImageUrl(imageId) is { } url)
+        {
+            PreviewImageSource = url;
+        }
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+        
     }
 
     private async Task OnClient(Func<TableClient, Task> action)

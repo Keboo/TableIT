@@ -11,7 +11,7 @@
     "TableIT.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:7225/viewer/9P2AKC",
+      "launchUrl": "https://localhost:7225/remote/resaef",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
