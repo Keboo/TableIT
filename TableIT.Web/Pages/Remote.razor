@@ -1,5 +1,7 @@
 ﻿@page "/remote"
 @page "/remote/{TableId}"
+@layout EmptyLayout
+
 @using System.Security.Claims
 @using Azure.Identity
 @using Azure.Storage.Blobs
@@ -7,7 +9,9 @@
 @using TableIT.Core
 @using TableIT.Core.Messages
 @using TableIT.Web.Data
-@*@layout EmptyLayout*@
+
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager;
 
 <div style="visibility:@(Client is null ? "collapse" : "visible")">
     <div class="container">
@@ -146,14 +150,21 @@
         }
     }
 
-    private async Task OnConnect()
+    private void OnConnect()
     {
+        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+        NavigationManager.NavigateTo($"/remote/{Model.TableId}", true);
+    }
+
+    private async Task DoConnection()
+    {
+        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+
+        Status = "Connecting";
         if (Client is { } client)
         {
             await client.DisposeAsync();
         }
-        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
-        Status = "Connecting";
 
         Client = new TableClient(userId: Model.TableId!.ToUpperInvariant());
         try
@@ -180,6 +191,7 @@
     {
         Model.TableId = TableId;
         await base.OnInitializedAsync();
+        await DoConnection();
     }
 
     public async ValueTask DisposeAsync()

@@ -93,7 +93,6 @@ public partial class TableClient : IAsyncDisposable
         {
             if (!Handlers.TryGetValue(envelope.DataType ?? "", out handlers))
             {
-                handlers = new(handlers);
                 return;
             }
         }
@@ -140,9 +139,9 @@ public partial class TableClient : IAsyncDisposable
         List<Func<EnvelopeMessage, Task<EnvelopeResponse?>>>? handlers;
         lock (Handlers)
         {
-            if (!Handlers.TryGetValue(typeof(T).FullName, out handlers))
+            if (!Handlers.TryGetValue(typeof(T).FullName!, out handlers))
             {
-                Handlers[typeof(T).FullName] = handlers = new();
+                Handlers[typeof(T).FullName!] = handlers = new();
             }
             handlers.Add(envelopeHandler);
         }

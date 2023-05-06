@@ -101,6 +101,7 @@
     {
         Model.TableId = TableId;
         await base.OnInitializedAsync();
+        await OnConnect();
     }
 
     public async ValueTask DisposeAsync()

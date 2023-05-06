@@ -47,7 +47,7 @@ internal class ResourceManager
             if (response?.IsSuccessStatusCode == true)
             {
                 data = await response.Content.ReadAsByteArrayAsync();
-                version = response.Headers.ETag.Tag;
+                version = response.Headers.ETag?.Tag;
                 cacheKey = $"{id}{version}{width}{height}";
                 Cache[cacheKey] = data;
                 return new MemoryStream(data);

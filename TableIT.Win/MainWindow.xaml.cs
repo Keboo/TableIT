@@ -18,14 +18,12 @@ namespace TableIT.Win;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private AppWindow AppWindow { get; }
     private ImageManager? _imageManager;
     private TableClient? _client;
 
     public MainWindow()
     {
         Title = "Table IT";
-        AppWindow = AppWindowExtensions.GetAppWindow(this);
         InitializeComponent();
 
         ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
