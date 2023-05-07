@@ -5,8 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using TableIT.Core;
-using TableIT.Core.Imaging;
+using TableIT.Shared.Resources;
 using Windows.Storage;
 
 namespace TableIT.Win;

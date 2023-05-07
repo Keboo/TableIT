@@ -39,6 +39,6 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TableIT.Core\TableIT.Core.csproj" />
+    <ProjectReference Include="..\TableIT\Shared\TableIT.Shared.csproj" />
   </ItemGroup>
 </Project>

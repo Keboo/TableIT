@@ -78,7 +78,7 @@ public static class TableClientMessageSenders
 
     public static void RegisterTableMessage<TMessage>(this TableClient client, Action<TMessage> handler)
         where TMessage : class
-        => client.Register<TMessage>(handler);
+        => client.Register(handler);
 
     private static async Task SendRemoteMessage<TMessage>(this TableClient client, TMessage message)
         => await client.SendAsync("remotemessage", message);

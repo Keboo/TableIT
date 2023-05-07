@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using TableIT.Client;
 using MudBlazor.Services;
+using TableIT.Client;
+using TableIT.Shared;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -22,5 +24,8 @@ builder.Services.AddMsalAuthentication(options =>
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
     options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetSection("ServerApi")["Scopes"]);
 });
+
+builder.Services.AddSingleton<ITableViewerConnection>(x => new TableViewerConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
+builder.Services.AddSingleton<IImageService, ImageService>(x => new(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("")));
 
 await builder.Build().RunAsync();

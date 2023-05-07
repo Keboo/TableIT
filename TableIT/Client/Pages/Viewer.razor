@@ -1,0 +1,139 @@
+﻿@page "/viewer"
+@page "/viewer/{TableId}"
+@*@layout EmptyLayout*@
+@using Microsoft.AspNetCore.SignalR.Client
+@using TableIT.Client.Data
+@using TableIT.Shared;
+
+@inject ITableViewerConnection TableConnection;
+@inject IImageService ImageService;
+
+<PageTitle>TableIT Viewer</PageTitle>
+
+<div style="visibility:@(!TableConnection.IsConnected ? "collapse" : "visible")">
+    <p>@Status</p>
+    <img src="@ImageSource" />
+</div>
+<center style="visibility: @(!TableConnection.IsConnected ? "visible" : "collapse")">
+    <h1>TableIT Connect</h1>
+    <EditForm Model="@Model" OnValidSubmit="@OnConnect">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Table Id" 
+                    Style="text-transform: uppercase;" 
+                    spellcheck="false"
+                    MaxLength="6" 
+                    Variant="Variant.Outlined" 
+                    Margin="Margin.Dense"
+                    @bind-Value="Model.TableId" For="@(() => Model.TableId)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Submit</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</center>
+
+
+@code {
+    public string ImageSource { get; set; } = "";
+    public string Status { get; set; } = "";
+    private ViewerModel Model { get; set; } = new();
+    [Parameter]
+    public string? TableId { get; set; }
+
+    //private void OnLoadImage(LoadImageMessage message)
+    //{
+    //    Status = "Image changed";
+    //    if (message is { ImageId: not null } &&
+    //        ImageService.GetImageUrl(message.ImageId) is { } url)
+    //    {
+    //        ImageSource = url.AbsolutePath;
+    //    }
+    //    _ = InvokeAsync(() =>
+    //    {
+    //        StateHasChanged();
+    //    });
+    //}
+
+    private void OnTableConfigurationUpdated(TableConfiguration? tableConfiguration)
+    {
+        Status = "Table configuration updated";
+        //TODO: Make sure the resource id is changning
+        if (tableConfiguration is { CurrentResourceId: not null } config &&
+            ImageService.GetImageUrl(config.CurrentResourceId) is { } url)
+        {
+            ImageSource = url.AbsolutePath;
+        }
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private async Task OnConnect()
+    {
+        if (TableConnection.IsConnected)
+        {
+            await TableConnection.DisconnectAsync();
+        }
+        string? tableId = Model.TableId?.ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(tableId)) return;
+
+        Status = $"Connecting to table {tableId}";
+        try
+        {
+            if (!await TableConnection.ConnectAsync(tableId))
+            {
+                Status = $"No table found at {tableId}. Waiting for table to join...";
+                await InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+                return;
+            }
+
+            TableConnection.TableConfigurationUpdated += OnTableConfigurationUpdated;
+
+            Status = "Getting table configuration";
+            if (await TableConnection.GetTableConfigurationAsync() is { } tableConfig)
+            {
+                if (!string.IsNullOrWhiteSpace(tableConfig.CurrentResourceId))
+                {
+                    ImageSource = ImageService.GetImageUrl(tableConfig.CurrentResourceId).AbsoluteUri;
+                    Status = "Done";
+                }
+                else
+                {
+                    Status = "No current image";
+                }
+            }
+            else
+            {
+                Status = $"Configuration failed to load from table {tableId}";
+            }
+        }
+        catch (Exception e)
+        {
+            Status = "ERROR: " + e.Message;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model.TableId = TableId;
+        await base.OnInitializedAsync();
+        await OnConnect();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (TableConnection.IsConnected)
+        {
+            await TableConnection.DisconnectAsync();
+        }
+    }
+}

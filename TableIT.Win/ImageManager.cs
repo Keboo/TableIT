@@ -2,17 +2,17 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TableIT.Core;
-using TableIT.Core.Imaging;
+using TableIT.Shared;
+using TableIT.Shared.Resources;
 
 namespace TableIT.Win;
 
 internal class ImageManager
 {
-    private TableClient Client { get; }
+    private IImageService Client { get; }
     public IResourcePersistence Persistence { get; }
 
-    public ImageManager(TableClient client, IResourcePersistence persistence)
+    public ImageManager(IImageService client, IResourcePersistence persistence)
     {
         Client = client;
         Persistence = persistence;
@@ -30,7 +30,8 @@ internal class ImageManager
 
     public async Task<Stream?> GetImage(string id, string? version)
     {
-        if (await Client.GetImage(id, version) is { } current)
+        /*
+        if (await Client.GetImageUrl(id, version) is { } current)
         {
             IReadOnlyList<ResourceData> data = await Persistence.GetAll();
             Dictionary<string, ResourceData> keyed = new();
@@ -49,6 +50,7 @@ internal class ImageManager
             await Persistence.Save(keyed.Values);
             return current;
         }
+        */
         return null;
     }
 

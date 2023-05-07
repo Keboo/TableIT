@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Identity.Web;
+using System.Text.Json.Serialization;
+using TableIT.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +14,26 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSignalR(hubOptions => hubOptions.EnableDetailedErrors = true)
+                .AddJsonProtocol(
+                    options =>
+                    {
+                        options.PayloadSerializerOptions.PropertyNamingPolicy =
+                            System.Text.Json.JsonNamingPolicy.CamelCase;
+                        options.PayloadSerializerOptions.ReferenceHandler =
+                            ReferenceHandler.IgnoreCycles;
+                    })
+                .AddHubOptions<TableHub>(
+                    options =>
+                    {
+                        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                        options.ClientTimeoutInterval = TimeSpan.FromMinutes(1);
+                    });
+builder.Services.AddSingleton<ITableManager, InMemoryTableManager>();
+
 
 var app = builder.Build();
 
@@ -42,6 +62,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+app.MapHub<TableHub>($"/{nameof(TableHub)}");
 
 app.MapRazorPages();
 app.MapControllers();

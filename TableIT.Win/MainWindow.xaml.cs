@@ -7,8 +7,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using TableIT.Core;
-using TableIT.Core.Messages;
+using TableIT.Shared;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace TableIT.Win;
@@ -19,7 +18,7 @@ namespace TableIT.Win;
 public sealed partial class MainWindow : Window
 {
     private ImageManager? _imageManager;
-    private TableClient? _client;
+    private ITableConnection? _tableConnection;
 
     public MainWindow()
     {
@@ -34,17 +33,17 @@ public sealed partial class MainWindow : Window
             {
                 await ConnectToServer();
 
-                if (_client is { } client)
+                if (_tableConnection is { } client)
                 {
-                    await SetStatusMessage("Loading images...");
+                    //await SetStatusMessage("Loading images...");
 
-                    var imageManager = _imageManager = new(client, new ResourcePersistence());
-                    if (await imageManager.Load() is { } imageStream)
-                    {
-                        await LoadImage(imageManager, imageStream);
-                    }
+                    //var imageManager = _imageManager = new(client, new ResourcePersistence());
+                    //if (await imageManager.Load() is { } imageStream)
+                    //{
+                    //    await LoadImage(imageManager, imageStream);
+                    //}
 
-                    await SetStatusMessage("Done");
+                    //await SetStatusMessage("Done");
                 }
             }
             catch (Exception e)
@@ -74,6 +73,7 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadImage(ImageManager imageManager, Stream imageStream)
     {
+        /*
         ResourceData? resourceData = await imageManager.GetCurrentData();
         DispatcherQueue.TryEnqueue(async () =>
         {
@@ -88,6 +88,7 @@ public sealed partial class MainWindow : Window
                 ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData?.VerticalOffset, resourceData?.ZoomFactor);
             }
         });
+        */
     }
 
     private void ZoomToFit()
@@ -134,15 +135,12 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            if (Debugger.IsAttached)
-            {
-                _client = new TableClient(userId: "DEBUG1");
-            }
-            else 
-            {
-                _client = new TableClient();
-            }
-            _client.RegisterTableMessage<PanMessage>(message =>
+            Uri hostUri = Debugger.IsAttached ? new("https://localhost:7031/TableHub") : new("https://localhost:7031/TableHub");
+
+            _tableConnection = new TableConnection(hostUri);
+
+            /*
+            _tableConnection.RegisterTableMessage<PanMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -162,7 +160,7 @@ public sealed partial class MainWindow : Window
                 });
             });
 
-            _client.RegisterTableMessage<ZoomMessage>(message =>
+            _tableConnection.RegisterTableMessage<ZoomMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -179,7 +177,7 @@ public sealed partial class MainWindow : Window
                 });
             });
 
-            _client.RegisterTableMessage<LoadImageMessage>(async message =>
+            _tableConnection.RegisterTableMessage<LoadImageMessage>(async message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -195,7 +193,7 @@ public sealed partial class MainWindow : Window
                 }
             });
 
-            _client.Handle<TableConfigurationRequest, TableConfigurationResponse>(async message =>
+            _tableConnection.Handle<TableConfigurationRequest, TableConfigurationResponse>(async message =>
             {
                 DispatcherQueue.TryEnqueue(
                 () =>
@@ -221,14 +219,14 @@ public sealed partial class MainWindow : Window
                 {
                     Config = new TableConfiguration
                     {
-                        Id = _client.UserId,
+                        Id = _tableConnection.UserId,
                         CurrentResourceId = currentResourceId,
                         Compass = compass
                     }
                 };
             });
 
-            _client.RegisterTableMessage<SetTableConfigurationMessage>(message =>
+            _tableConnection.RegisterTableMessage<SetTableConfigurationMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
@@ -246,7 +244,7 @@ public sealed partial class MainWindow : Window
                 }
             });
 
-            _client.Handle<TablePingRequest, TablePingResponse>(message =>
+            _tableConnection.Handle<TablePingRequest, TablePingResponse>(message =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
@@ -255,7 +253,7 @@ public sealed partial class MainWindow : Window
                 return Task.FromResult<TablePingResponse?>(new TablePingResponse());
             });
 
-            _client.RegisterTableMessage<RotateMessage>(message =>
+            _tableConnection.RegisterTableMessage<RotateMessage>(message =>
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
@@ -276,13 +274,15 @@ public sealed partial class MainWindow : Window
                     }
                 });
             });
+            */
 
-            await _client.StartAsync();
+            string tableId = Debugger.IsAttached ? "DEBUG1" : TableId.Generate();
+            await _tableConnection.ConnectAsync(tableId);
             DispatcherQueue.TryEnqueue(
             () =>
             {
-                UserId.Text = $"ID: {_client.UserId}";
-                ViewUrl.Text = $"https://tableit.keboo.dev/{_client.UserId}";
+                UserId.Text = $"ID: {tableId}";
+                ViewUrl.Text = $"https://tableit.keboo.dev/{tableId}";
                 Status.Text = "Connected";
             });
         }
@@ -308,11 +308,13 @@ public sealed partial class MainWindow : Window
 
     private void CopyTableId(object sender, RoutedEventArgs e)
     {
-        if (_client?.UserId is { } tableId)
+        /*
+        if (_tableConnection?.UserId is { } tableId)
         {
             DataPackage dataPackage = new();
             dataPackage.SetText(tableId);
             Clipboard.SetContent(dataPackage);
         }
+        */
     }
 }
