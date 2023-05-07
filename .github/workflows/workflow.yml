@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -34,7 +34,7 @@ jobs:
         working-directory: TableIT/Server
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ../../web-output
+        run: dotnet publish -c Release -p:PublishDir="../../web-output"
         working-directory: TableIT/Server
 
       - name: Deploy to Azure Web App
