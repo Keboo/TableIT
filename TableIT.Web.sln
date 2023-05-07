@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Shared", "TableIT\Shared\TableIT.Shared.csproj", "{BF57D843-BCF0-4919-98C9-055526A2F366}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Client", "TableIT\Client\TableIT.Client.csproj", "{FA6A34D3-0F90-47D7-9E9A-40C28ACA81ED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Server", "TableIT\Server\TableIT.Server.csproj", "{3F696ECA-7A7F-420D-A0B3-B207B7133291}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF57D843-BCF0-4919-98C9-055526A2F366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF57D843-BCF0-4919-98C9-055526A2F366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF57D843-BCF0-4919-98C9-055526A2F366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF57D843-BCF0-4919-98C9-055526A2F366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA6A34D3-0F90-47D7-9E9A-40C28ACA81ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA6A34D3-0F90-47D7-9E9A-40C28ACA81ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA6A34D3-0F90-47D7-9E9A-40C28ACA81ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA6A34D3-0F90-47D7-9E9A-40C28ACA81ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F696ECA-7A7F-420D-A0B3-B207B7133291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F696ECA-7A7F-420D-A0B3-B207B7133291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F696ECA-7A7F-420D-A0B3-B207B7133291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F696ECA-7A7F-420D-A0B3-B207B7133291}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

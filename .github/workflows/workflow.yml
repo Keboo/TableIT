@@ -25,17 +25,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Build TableIT.Shared
-        run: dotnet build --configuration Release
-        working-directory: TableIT/Shared
-
-      - name: Build Web App
-        run: dotnet build --configuration Release
-        working-directory: TableIT/Server
+      - name: Build TableIT
+        run: dotnet build --configuration Release TableIT.Web.sln
 
       - name: dotnet publish
-        run: dotnet publish -c Release -p:PublishDir="../../web-output"
-        working-directory: TableIT/Server
+        run: dotnet publish -c Release TableIT.Web.sln -p:PublishDir="../../web-output"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
