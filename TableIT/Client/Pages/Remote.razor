@@ -5,104 +5,97 @@
 @using TableIT.Client.Data;
 @using TableIT.Shared;
 @using TableIT.Shared.Resources;
-@*@using Azure.Identity
-@using Azure.Storage.Blobs
-@using Azure.Storage.Blobs.Models*@
-@*@using TableIT.Core
-@using TableIT.Core.Messages
-@using TableIT.Web.Data*@
 
 @inject ITableRemoteConnection Client;
+@inject IImageService ImageService;
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager;
 
-<div style="visibility:@(Client is null ? "collapse" : "visible")">
-    <div class="container">
-        <div class="row">
-            <div class="col-6">
-                <p>@Status</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-5">
-                @*<Virtualize Items="@Images">
-                    <div class="row">
-                        <div class="col">
-                            <a href="javascript: void(0)" @onclick="@(e => OpenImage(context.Id))">@context.Name</a>
-                        </div>
-                        <div class="col">
-                            <img src="@Client?.GetImageUrl(context.Id ?? "", height:30)" height="30" />
-                        </div>
-                    </div>
-                </Virtualize>*@
-            </div>
-            <div class="col-7">
-                <div class="row">
-                    <div class="col" />
-                    <div class="col">
-                        <button @onclick="MoveUp">Up</button>
-                    </div>
-                    <div class="col" />
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <button @onclick="MoveLeft">Left</button>
-                    </div>
-                    <div class="col">
-                        <button @onclick="Rotate">Rotate</button>
-                    </div>
-                    <div class="col">
-                        <button @onclick="MoveRight">Right</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col" />
-                    <div class="col">
-                        <button @onclick="MoveDown">Down</button>
-                    </div>
-                    <div class="col" />
-                </div>
+<PageTitle>TableIT Remote</PageTitle>
 
-                <div class="row">
-                    <div class="col">
-                        <button @onclick="ZoomOut">Zoom Out</button>
-                    </div>
-                    <div class="col">
-                        <button @onclick="ZoomFit">Zoom to Fit</button>
-                    </div>
-                    <div class="col">
-                        <button @onclick="ZoomIn">Zoom In</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                    </div>
-                    <div class="col">
-                        <button @onclick="ApplyPreview">Apply Preview</button>
-                    </div>
-                    <div class="col">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <img src="@PreviewImageSource" width="100%" />
-                    </div>
-                </div>
-            </div>
-        </div>
-        
 
-    </div>
+<div style="visibility:@(!Client.IsConnected ? "collapse" : "visible")">
+    <MudGrid Justify="Justify.FlexStart">
+        @*<MudItem xs="12">
+            @Status
+        </MudItem>*@
+        <MudItem xs="4">
+            <MudStack Spacing="0">
+                <MudVirtualize Items="@Images" Context="image">
+                    <MudStack Spacing="0">
+                        <MudImage Src="@(ImageService.GetImageUrl(image.ResourceId ?? "", height: 30))" Height="30" Width="30" ObjectFit="ObjectFit.ScaleDown"></MudImage>
+                        <MudLink OnClick="() => OpenImage(image.ResourceId)">@image.DisplayName</MudLink>
+                    </MudStack>
+                </MudVirtualize>
+            </MudStack>
+        </MudItem>
+        <MudItem xs="8">
+            <MudGrid Justify="Justify.Center">
+                @*<MudItem xs="12">
+                <MudPaper>
+                <MudImage Src="@ImageSource" Height="300" Width="300" ObjectFit="ObjectFit.ScaleDown"></MudImage>
+                </MudPaper>
+                </MudItem>*@
+                <MudItem xs="12">
+                    <MudGrid Justify="Justify.Center">
+                        <MudItem xs="4" />
+                        <MudItem xs="4">
+                            <MudButton @onclick="MoveUp" Color="Color.Primary">Up</MudButton>
+                        </MudItem>
+                        <MudItem xs="4" />
+
+                        <MudItem xs="4">
+                            <MudButton @onclick="MoveLeft" Color="Color.Primary">Left</MudButton>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudButton @onclick="Rotate" Color="Color.Primary">Rotate</MudButton>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudButton @onclick="MoveRight" Color="Color.Primary">Right</MudButton>
+                        </MudItem>
+                        <MudItem xs="4" />
+                        <MudItem xs="4">
+                            <MudButton @onclick="MoveDown" Color="Color.Primary">Down</MudButton>
+                        </MudItem>
+                        <MudItem xs="4" />
+                        <MudItem xs="4">
+                            <MudButton @onclick="ZoomOut" Color="Color.Primary">Zoom Out</MudButton>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudButton @onclick="ZoomFit" Color="Color.Primary">Zoom to Fit</MudButton>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudButton @onclick="ZoomIn" Color="Color.Primary">Zoom In</MudButton>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudButton @onclick="ApplyPreview" Color="Color.Primary">Apply Preview</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
 </div>
-<center style="visibility: @(Client is null ? "visible" : "collapse")">
-    <h1>TableIT Connect</h1>
+<center style="visibility: @(!Client.IsConnected ? "visible" : "collapse")">
+    <h1>TableIT Remote</h1>
     <EditForm Model="@Model" OnValidSubmit="@OnConnect">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <InputText id="tableId" @bind-Value="Model.TableId" style="text-transform: uppercase;" spellcheck="false" placeholder="Table ID" />
-
-        <button type="submit">Connect</button>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Table Id"
+                              Style="text-transform: uppercase;"
+                              spellcheck="false"
+                              MaxLength="6"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              @bind-Value="Model.TableId" For="@(() => Model.TableId)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Submit</MudButton>
+            </MudCardActions>
+        </MudCard>
     </EditForm>
 </center>
 
@@ -113,7 +106,7 @@
     [ParameterAttribute]
     public string? TableId { get; set; }
     private RemoteModel Model { get; set; } = new();
-    private List<ImageData> Images { get; set; } = new();
+    private List<ImageResource> Images { get; set; } = new();
 
     private async Task MoveUp()
     {
@@ -196,9 +189,9 @@
         if (string.IsNullOrWhiteSpace(tableId)) return;
 
         Status = "Connecting";
-        if (Client is { } client)
+        if (Client.IsConnected)
         {
-            await client.DisconnectAsync();
+            await Client.DisconnectAsync();
         }
 
         try
@@ -209,7 +202,7 @@
                 return;
             }
             Status = "Connected";
-            //Images = (await Client.GetImages()).ToList();
+            Images = (await ImageService.GetImageResourcesAsync() ?? Array.Empty<ImageResource>()).ToList();
         }
         catch (Exception e)
         {

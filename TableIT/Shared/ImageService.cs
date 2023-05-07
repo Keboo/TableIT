@@ -1,25 +1,33 @@
-﻿namespace TableIT.Shared;
+﻿using System.Net.Http.Json;
+using TableIT.Shared.Resources;
+
+namespace TableIT.Shared;
 
 public class ImageService : IImageService
 {
-    public ImageService(Uri baseUrl)
+    public ImageService(HttpClient httpClient)
     {
-        BaseUrl = baseUrl;
+        HttpClient = httpClient;
     }
 
-    public Uri BaseUrl { get; }
+    public HttpClient HttpClient { get; }
 
-    public Uri GetImageUrl(string imageId, int? width = null, int? height = null)
+    public async Task<IReadOnlyList<ImageResource>?> GetImageResourcesAsync()
+    {
+        return await HttpClient.GetFromJsonAsync<ImageResource[]>("/api/image/list");
+    }
+
+    public string GetImageUrl(string imageId, int? width = null, int? height = null)
     {
         if (string.IsNullOrWhiteSpace(imageId)) throw new ArgumentException("Image id must be specified", nameof(imageId));
 
-        string relativeUrl = $"/image/{imageId}";
+        string relativeUrl = $"/api/image/{imageId}";
         string query = string.Join("&", GetQueryParamter());
         if (query.Length > 0)
         {
             relativeUrl += "?" + query;
         }
-        return new Uri(BaseUrl, relativeUrl);
+        return relativeUrl;
 
         IEnumerable<string> GetQueryParamter()
         {

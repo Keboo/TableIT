@@ -7,6 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Core", "TableIT.Cor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9546D34F-87F8-4CF9-AB70-BB1AD5DCBA14}"
 	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
 		.github\workflows\workflow.yml = .github\workflows\workflow.yml
 	EndProjectSection
 EndProject
@@ -16,11 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Web", "TableIT.Web\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Win", "TableIT.Win\TableIT.Win.csproj", "{93A4A799-1BE5-432C-898C-A9E01B50214A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableIT.Server", "TableIT\Server\TableIT.Server.csproj", "{9299C137-316F-4EF0-8B1A-D6B2D5905CAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Server", "TableIT\Server\TableIT.Server.csproj", "{9299C137-316F-4EF0-8B1A-D6B2D5905CAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableIT.Client", "TableIT\Client\TableIT.Client.csproj", "{C1F6F7C0-7612-4B14-B7B6-C82320C7B716}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Client", "TableIT\Client\TableIT.Client.csproj", "{C1F6F7C0-7612-4B14-B7B6-C82320C7B716}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableIT.Shared", "TableIT\Shared\TableIT.Shared.csproj", "{0734A75C-E3F8-407E-A07A-E1CE08B83488}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableIT.Shared", "TableIT\Shared\TableIT.Shared.csproj", "{0734A75C-E3F8-407E-A07A-E1CE08B83488}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

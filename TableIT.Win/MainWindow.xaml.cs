@@ -135,8 +135,8 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            Uri hostUri = Debugger.IsAttached ? new("https://localhost:7031/TableHub") : new("https://localhost:7031/TableHub");
-
+            Uri hostUri = Debugger.IsAttached ? new("https://localhost:7031/TableHub") : new("https://tableit.azurewebsites.net/TableHub");
+            
             _tableConnection = new TableConnection(hostUri);
 
             /*

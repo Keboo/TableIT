@@ -66,7 +66,7 @@
         if (tableConfiguration is { CurrentResourceId: not null } config &&
             ImageService.GetImageUrl(config.CurrentResourceId) is { } url)
         {
-            ImageSource = url.AbsolutePath;
+            ImageSource = url;
         }
         _ = InvokeAsync(() =>
         {
@@ -103,7 +103,7 @@
             {
                 if (!string.IsNullOrWhiteSpace(tableConfig.CurrentResourceId))
                 {
-                    ImageSource = ImageService.GetImageUrl(tableConfig.CurrentResourceId).AbsoluteUri;
+                    ImageSource = ImageService.GetImageUrl(tableConfig.CurrentResourceId);
                     Status = "Done";
                 }
                 else

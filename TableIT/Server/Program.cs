@@ -1,3 +1,6 @@
+using Azure.Core;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using System.Text.Json.Serialization;
@@ -34,6 +37,11 @@ builder.Services.AddSignalR(hubOptions => hubOptions.EnableDetailedErrors = true
                     });
 builder.Services.AddSingleton<ITableManager, InMemoryTableManager>();
 
+builder.Services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
+builder.Services.AddSingleton(x =>
+{
+    return new BlobContainerClient(new Uri("https://tableitstorage.blob.core.windows.net/resources/"), x.GetRequiredService<TokenCredential>());
+});
 
 var app = builder.Build();
 
