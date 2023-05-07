@@ -27,15 +27,15 @@ jobs:
 
       - name: Build TableIT.Shared
         run: dotnet build --configuration Release
-        working-directory: TableIT.Shared
+        working-directory: TableIT/Shared
 
       - name: Build Web App
         run: dotnet build --configuration Release
-        working-directory: TableIT.Server
+        working-directory: TableIT/Server
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ../web-output
-        working-directory: TableIT.Server
+        run: dotnet publish -c Release -o ../../web-output
+        working-directory: TableIT/Server
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
