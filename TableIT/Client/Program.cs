@@ -26,6 +26,7 @@ builder.Services.AddMsalAuthentication(options =>
 });
 
 builder.Services.AddSingleton<ITableViewerConnection>(x => new TableViewerConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
+builder.Services.AddSingleton<ITableRemoteConnection>(x => new TableRemoteConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
 builder.Services.AddSingleton<IImageService, ImageService>(x => new(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("")));
 
 await builder.Build().RunAsync();

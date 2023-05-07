@@ -1,0 +1,234 @@
+﻿@page "/remote"
+@page "/remote/{TableId}"
+
+@using System.Security.Claims
+@using TableIT.Client.Data;
+@using TableIT.Shared;
+@using TableIT.Shared.Resources;
+@*@using Azure.Identity
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models*@
+@*@using TableIT.Core
+@using TableIT.Core.Messages
+@using TableIT.Web.Data*@
+
+@inject ITableRemoteConnection Client;
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager;
+
+<div style="visibility:@(Client is null ? "collapse" : "visible")">
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <p>@Status</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-5">
+                @*<Virtualize Items="@Images">
+                    <div class="row">
+                        <div class="col">
+                            <a href="javascript: void(0)" @onclick="@(e => OpenImage(context.Id))">@context.Name</a>
+                        </div>
+                        <div class="col">
+                            <img src="@Client?.GetImageUrl(context.Id ?? "", height:30)" height="30" />
+                        </div>
+                    </div>
+                </Virtualize>*@
+            </div>
+            <div class="col-7">
+                <div class="row">
+                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="MoveUp">Up</button>
+                    </div>
+                    <div class="col" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button @onclick="MoveLeft">Left</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="Rotate">Rotate</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="MoveRight">Right</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col" />
+                    <div class="col">
+                        <button @onclick="MoveDown">Down</button>
+                    </div>
+                    <div class="col" />
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <button @onclick="ZoomOut">Zoom Out</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="ZoomFit">Zoom to Fit</button>
+                    </div>
+                    <div class="col">
+                        <button @onclick="ZoomIn">Zoom In</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                    </div>
+                    <div class="col">
+                        <button @onclick="ApplyPreview">Apply Preview</button>
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <img src="@PreviewImageSource" width="100%" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+<center style="visibility: @(Client is null ? "visible" : "collapse")">
+    <h1>TableIT Connect</h1>
+    <EditForm Model="@Model" OnValidSubmit="@OnConnect">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="tableId" @bind-Value="Model.TableId" style="text-transform: uppercase;" spellcheck="false" placeholder="Table ID" />
+
+        <button type="submit">Connect</button>
+    </EditForm>
+</center>
+
+@code {
+    private string Status { get; set; } = "";
+    private string? PreviewImageId { get; set; }
+    public string PreviewImageSource { get; set; } = "";
+    [ParameterAttribute]
+    public string? TableId { get; set; }
+    private RemoteModel Model { get; set; } = new();
+    private List<ImageData> Images { get; set; } = new();
+
+    private async Task MoveUp()
+    {
+        //await OnClient(client => client.SendPan(null, -20));
+    }
+
+    private async Task MoveDown()
+    {
+        //await OnClient(client => client.SendPan(null, 20));
+    }
+
+    private async Task MoveLeft()
+    {
+        //await OnClient(client => client.SendPan(-20, null));
+    }
+
+    private async Task MoveRight()
+    {
+        //await OnClient(client => client.SendPan(20, null));
+    }
+
+    private async Task ZoomOut()
+    {
+        //await OnClient(client => client.SendZoom(-0.1f));
+    }
+
+    private async Task ZoomFit()
+    {
+        //await OnClient(client => client.SendZoomToFit());
+    }
+
+    private async Task ZoomIn()
+    {
+        //await OnClient(client => client.SendZoom(0.1f));
+    }
+
+    private async Task Rotate()
+    {
+        //await OnClient(client => client.SendRotate(90));
+    }
+
+    private async Task ApplyPreview()
+    {
+        if (string.IsNullOrWhiteSpace(PreviewImageId)) return;
+        //await OnClient(client => client.SetCurrentImage(PreviewImageId));
+    }
+
+    private void OpenImage(string? imageId)
+    {
+        PreviewImageId = imageId;
+        if (string.IsNullOrWhiteSpace(imageId)) return;
+        //if (Client?.GetImageUrl(imageId) is { } url)
+        //{
+        //    PreviewImageSource = url;
+        //}
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+
+    }
+
+    private async Task OnClient(Func<ITableRemoteConnection, Task> action)
+    {
+        if (Client is { } client)
+        {
+            await action(client);
+        }
+    }
+
+    private void OnConnect()
+    {
+        if (string.IsNullOrWhiteSpace(Model.TableId)) return;
+        NavigationManager.NavigateTo($"/remote/{Model.TableId}", true);
+    }
+
+    private async Task DoConnection()
+    {
+        string? tableId = Model.TableId;
+        if (string.IsNullOrWhiteSpace(tableId)) return;
+
+        Status = "Connecting";
+        if (Client is { } client)
+        {
+            await client.DisconnectAsync();
+        }
+
+        try
+        {
+            if (!await Client.ConnectAsync(tableId))
+            {
+                Status = $"No table found at {tableId}";
+                return;
+            }
+            Status = "Connected";
+            //Images = (await Client.GetImages()).ToList();
+        }
+        catch (Exception e)
+        {
+            Status = "ERROR: " + e.Message;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model.TableId = TableId;
+        await base.OnInitializedAsync();
+        await DoConnection();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Client is { } client)
+        {
+            await client.DisconnectAsync();
+        }
+    }
+}

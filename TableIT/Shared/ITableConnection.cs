@@ -18,6 +18,11 @@ public interface ITableViewerConnection : IBaseTableConnection
     event Action<TableConfiguration>? TableConfigurationUpdated;
 }
 
+public interface ITableRemoteConnection : IBaseTableConnection
+{
+    
+}
+
 public interface ITableConnection : IBaseTableConnection
 {
     TableConfiguration TableConfiguration { get; set; }
@@ -48,7 +53,7 @@ public class TableViewerConnection : BaseTableConnection, ITableViewerConnection
     }
 }
 
-public class TableRemoteConnection : BaseTableConnection
+public class TableRemoteConnection : BaseTableConnection, ITableRemoteConnection
 {
     public TableRemoteConnection(Uri url) : base(url)
     {
