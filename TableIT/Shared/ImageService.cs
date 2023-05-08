@@ -17,11 +17,16 @@ public class ImageService : IImageService
         return await HttpClient.GetFromJsonAsync<ImageResource[]>("/api/image/list");
     }
 
-    public string GetImageUrl(string imageId, int? width = null, int? height = null)
+    public Task<Stream> GetImageAsync(string resourceId)
     {
-        if (string.IsNullOrWhiteSpace(imageId)) throw new ArgumentException("Image id must be specified", nameof(imageId));
+        return HttpClient.GetStreamAsync(GetImageUrl(resourceId));
+    }
 
-        string relativeUrl = $"/api/image/{imageId}";
+    public string GetImageUrl(string resourceId, int? width = null, int? height = null)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId)) throw new ArgumentException("Resource id must be specified", nameof(resourceId));
+
+        string relativeUrl = $"/api/image/{resourceId}";
         string query = string.Join("&", GetQueryParamter());
         if (query.Length > 0)
         {

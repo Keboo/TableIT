@@ -17,7 +17,7 @@
 <div style="visibility:@(!Client.IsConnected ? "collapse" : "visible")">
     <MudGrid Justify="Justify.FlexStart">
         @*<MudItem xs="12">
-            @Status
+        @Status
         </MudItem>*@
         <MudItem xs="4">
             <MudStack Spacing="0">
@@ -31,46 +31,44 @@
         </MudItem>
         <MudItem xs="8">
             <MudGrid Justify="Justify.Center">
-                @*<MudItem xs="12">
-                <MudPaper>
-                <MudImage Src="@ImageSource" Height="300" Width="300" ObjectFit="ObjectFit.ScaleDown"></MudImage>
-                </MudPaper>
-                </MudItem>*@
                 <MudItem xs="12">
                     <MudGrid Justify="Justify.Center">
                         <MudItem xs="4" />
                         <MudItem xs="4">
-                            <MudButton @onclick="MoveUp" Color="Color.Primary">Up</MudButton>
+                            <MudButton @onclick="MoveUp" Color="Color.Primary" Variant="Variant.Filled">Up</MudButton>
                         </MudItem>
                         <MudItem xs="4" />
 
                         <MudItem xs="4">
-                            <MudButton @onclick="MoveLeft" Color="Color.Primary">Left</MudButton>
+                            <MudButton @onclick="MoveLeft" Color="Color.Primary" Variant="Variant.Filled">Left</MudButton>
                         </MudItem>
                         <MudItem xs="4">
-                            <MudButton @onclick="Rotate" Color="Color.Primary">Rotate</MudButton>
+                            <MudButton @onclick="Rotate" Color="Color.Primary" Variant="Variant.Filled">Rotate</MudButton>
                         </MudItem>
                         <MudItem xs="4">
-                            <MudButton @onclick="MoveRight" Color="Color.Primary">Right</MudButton>
-                        </MudItem>
-                        <MudItem xs="4" />
-                        <MudItem xs="4">
-                            <MudButton @onclick="MoveDown" Color="Color.Primary">Down</MudButton>
+                            <MudButton @onclick="MoveRight" Color="Color.Primary" Variant="Variant.Filled">Right</MudButton>
                         </MudItem>
                         <MudItem xs="4" />
                         <MudItem xs="4">
-                            <MudButton @onclick="ZoomOut" Color="Color.Primary">Zoom Out</MudButton>
+                            <MudButton @onclick="MoveDown" Color="Color.Primary" Variant="Variant.Filled">Down</MudButton>
+                        </MudItem>
+                        <MudItem xs="4" />
+                        <MudItem xs="4">
+                            <MudButton @onclick="ZoomOut" Color="Color.Primary" Variant="Variant.Filled">Zoom Out</MudButton>
                         </MudItem>
                         <MudItem xs="4">
-                            <MudButton @onclick="ZoomFit" Color="Color.Primary">Zoom to Fit</MudButton>
+                            <MudButton @onclick="ZoomFit" Color="Color.Primary" Variant="Variant.Filled">Zoom to Fit</MudButton>
                         </MudItem>
                         <MudItem xs="4">
-                            <MudButton @onclick="ZoomIn" Color="Color.Primary">Zoom In</MudButton>
+                            <MudButton @onclick="ZoomIn" Color="Color.Primary" Variant="Variant.Filled">Zoom In</MudButton>
                         </MudItem>
                         <MudItem xs="12">
-                            <MudButton @onclick="ApplyPreview" Color="Color.Primary">Apply Preview</MudButton>
+                            <MudButton @onclick="ApplyPreview" Color="Color.Primary" Variant="Variant.Filled">Apply Preview</MudButton>
                         </MudItem>
                     </MudGrid>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudImage Src="@PreviewImageSource" Height="300" Width="300" ObjectFit="ObjectFit.ScaleDown"></MudImage>
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -110,58 +108,56 @@
 
     private async Task MoveUp()
     {
-        //await OnClient(client => client.SendPan(null, -20));
+        await OnClient(client => client.SendPanAsync(null, -20));
     }
 
     private async Task MoveDown()
     {
-        //await OnClient(client => client.SendPan(null, 20));
+        await OnClient(client => client.SendPanAsync(null, 20));
     }
 
     private async Task MoveLeft()
     {
-        //await OnClient(client => client.SendPan(-20, null));
+        await OnClient(client => client.SendPanAsync(-20, null));
     }
 
     private async Task MoveRight()
     {
-        //await OnClient(client => client.SendPan(20, null));
-    }
-
-    private async Task ZoomOut()
-    {
-        //await OnClient(client => client.SendZoom(-0.1f));
-    }
-
-    private async Task ZoomFit()
-    {
-        //await OnClient(client => client.SendZoomToFit());
+        await OnClient(client => client.SendPanAsync(20, null));
     }
 
     private async Task ZoomIn()
     {
-        //await OnClient(client => client.SendZoom(0.1f));
+        await OnClient(client => client.SendZoomAsync(0.1f));
     }
+    
+    private async Task ZoomOut()
+    {
+        await OnClient(client => client.SendZoomAsync(-0.1f));
+    }
+
+    private async Task ZoomFit()
+    {
+        await OnClient(client => client.SendZoomToFitAsync());
+    }
+
 
     private async Task Rotate()
     {
-        //await OnClient(client => client.SendRotate(90));
+        await OnClient(client => client.SendRotateAsync(90));
     }
 
     private async Task ApplyPreview()
     {
         if (string.IsNullOrWhiteSpace(PreviewImageId)) return;
-        //await OnClient(client => client.SetCurrentImage(PreviewImageId));
+        await OnClient(client => client.SetCurrentImage(PreviewImageId));
     }
 
     private void OpenImage(string? imageId)
     {
         PreviewImageId = imageId;
         if (string.IsNullOrWhiteSpace(imageId)) return;
-        //if (Client?.GetImageUrl(imageId) is { } url)
-        //{
-        //    PreviewImageSource = url;
-        //}
+        PreviewImageSource = ImageService?.GetImageUrl(imageId) ?? "";
         _ = InvokeAsync(() =>
         {
             StateHasChanged();

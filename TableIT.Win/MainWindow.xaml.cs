@@ -6,9 +6,10 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TableIT.Shared;
-using Windows.ApplicationModel.DataTransfer;
+using TableIT.Shared.Resources;
 
 namespace TableIT.Win;
 
@@ -17,6 +18,13 @@ namespace TableIT.Win;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
+    private static Uri RootUrl { get; }
+#if DEBUG
+        = Debugger.IsAttached ? new("https://localhost:7031/") : new("https://tableit.azurewebsites.net/");
+#else
+        = new("https://tableit.azurewebsites.net/")
+#endif
+
     private ImageManager? _imageManager;
     private ITableConnection? _tableConnection;
 
@@ -35,15 +43,20 @@ public sealed partial class MainWindow : Window
 
                 if (_tableConnection is { } client)
                 {
-                    //await SetStatusMessage("Loading images...");
+                    await SetStatusMessage("Loading images...");
 
-                    //var imageManager = _imageManager = new(client, new ResourcePersistence());
-                    //if (await imageManager.Load() is { } imageStream)
-                    //{
-                    //    await LoadImage(imageManager, imageStream);
-                    //}
+                    HttpClient httpClient = new()
+                    {
+                        BaseAddress = RootUrl
+                    };
+                    IImageService imageService = new ImageService(httpClient);
+                    var imageManager = _imageManager = new(imageService, new ResourcePersistence());
+                    if (await imageManager.Load() is { } imageStream)
+                    {
+                        await LoadImage(imageManager, imageStream);
+                    }
 
-                    //await SetStatusMessage("Done");
+                    await SetStatusMessage("Done");
                 }
             }
             catch (Exception e)
@@ -73,7 +86,6 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadImage(ImageManager imageManager, Stream imageStream)
     {
-        /*
         ResourceData? resourceData = await imageManager.GetCurrentData();
         DispatcherQueue.TryEnqueue(async () =>
         {
@@ -87,44 +99,9 @@ public sealed partial class MainWindow : Window
             {
                 ScrollViewer.ChangeView(resourceData.HorizontalOffset, resourceData?.VerticalOffset, resourceData?.ZoomFactor);
             }
-        });
-        */
-    }
-
-    private void ZoomToFit()
-    {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            if (Image.ActualWidth > 0 && Image.ActualHeight > 0)
+            else
             {
-                
-                bool verticalOrientation = false;
-                if (Image.RenderTransform is RotateTransform rotate)
-                {
-                    var angle = rotate.Angle % 360;
-                    if (angle > 45 && angle < 135)
-                    {
-                        verticalOrientation = true;
-                    }
-                    else if (angle > 135 + 90 && angle < 135 + 180)
-                    {
-                        verticalOrientation = true;
-                    }
-                }
-                double verticalZoom;
-                double horizontalZoom;
-                if (verticalOrientation)
-                {
-                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualWidth;
-                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualHeight;
-                }
-                else
-                {
-                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualHeight;
-                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualWidth;
-                }
-                var zoom = (float)Math.Min(verticalZoom, horizontalZoom);
-                ScrollViewer.ChangeView(Image.Margin.Left * zoom, Image.Margin.Top * zoom, zoom);
+                OnZoomToFit();
             }
         });
     }
@@ -135,123 +112,21 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            Uri hostUri = Debugger.IsAttached ? new("https://localhost:7031/TableHub") : new("https://tableit.azurewebsites.net/TableHub");
-            
+            Uri hostUri = new(RootUrl, "/TableHub");
+
             _tableConnection = new TableConnection(hostUri);
 
+            _tableConnection.TableConfigurationUpdated += OnTableConfigurationUpdated;
+            _tableConnection.ZoomToFit += OnZoomToFit;
+            _tableConnection.Zoom += OnZoom;
+            _tableConnection.Rotate += OnRotate;
+            _tableConnection.Pan += OnPan;
             /*
             _tableConnection.RegisterTableMessage<PanMessage>(message =>
             {
-                DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    Status.Text = $"got pan message {message.HorizontalOffset}x{message.VerticalOffset}";
-                    double? horizontalOffset = null;
-                    if (message.HorizontalOffset != null)
-                    {
-                        horizontalOffset = ScrollViewer.HorizontalOffset + message.HorizontalOffset;
-                    }
-                    double? verticalOffset = null;
-                    if (message.VerticalOffset != null)
-                    {
-                        verticalOffset = ScrollViewer.VerticalOffset + message.VerticalOffset;
-                    }
-                    ScrollViewer.ChangeView(horizontalOffset, verticalOffset, null);
-                });
+                
             });
 
-            _tableConnection.RegisterTableMessage<ZoomMessage>(message =>
-            {
-                DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    Status.Text = $"got zoom message {message.ZoomAdjustment} fit? {message.ZoomToFit}";
-                    if (message.ZoomToFit is { } fit && fit)
-                    {
-                        ZoomToFit();
-                    }
-                    else if (message.ZoomAdjustment is { } adjustment)
-                    {
-                        ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + adjustment);
-                    }
-                });
-            });
-
-            _tableConnection.RegisterTableMessage<LoadImageMessage>(async message =>
-            {
-                DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    Status.Text = $"Loading image...";
-                });
-
-                if (_imageManager is { } imageManager &&
-                    message is { ImageId: not null } &&
-                    await imageManager.GetImage(message.ImageId, message.Version) is { } imageStream)
-                {
-                    await LoadImage(imageManager, imageStream);
-                }
-            });
-
-            _tableConnection.Handle<TableConfigurationRequest, TableConfigurationResponse>(async message =>
-            {
-                DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    Status.Text = $"Getting table config";
-                });
-                string? currentResourceId = null;
-                if (_imageManager is { } imageManager)
-                {
-                    currentResourceId = (await imageManager.GetCurrentData())?.Id;
-                }
-                CompassConfiguration? compass = null;
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    compass = new CompassConfiguration
-                    {
-                        IsShown = Compass.Visibility == Visibility.Visible,
-                        Size = (int)Compass.Width, //NB: height is expected to always match
-                        Color = Compass.Foreground.ToPackedColor()
-                    };
-                });
-                return new TableConfigurationResponse
-                {
-                    Config = new TableConfiguration
-                    {
-                        Id = _tableConnection.UserId,
-                        CurrentResourceId = currentResourceId,
-                        Compass = compass
-                    }
-                };
-            });
-
-            _tableConnection.RegisterTableMessage<SetTableConfigurationMessage>(message =>
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    Status.Text = $"Setting table config";
-                });
-
-                if (message.Config?.Compass is { } compassConfig)
-                {
-                    DispatcherQueue.TryEnqueue(() =>
-                    {
-                        Compass.Visibility = compassConfig.IsShown ? Visibility.Visible : Visibility.Collapsed;
-                        Compass.Width = Compass.Height = compassConfig.Size;
-                        Compass.Foreground = compassConfig.Color.ToBrush();
-                    });
-                }
-            });
-
-            _tableConnection.Handle<TablePingRequest, TablePingResponse>(message =>
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    Status.Text = $"New client connected";
-                });
-                return Task.FromResult<TablePingResponse?>(new TablePingResponse());
-            });
 
             _tableConnection.RegisterTableMessage<RotateMessage>(message =>
             {
@@ -289,6 +164,112 @@ public sealed partial class MainWindow : Window
         catch (Exception ex)
         {
             await SetStatusMessage($"Error: {ex.Message}");
+        }
+    }
+
+    private void OnPan(int? horizontalOffset, int? verticalOffset)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Status.Text = $"got pan message {horizontalOffset}x{verticalOffset}";
+            double? hOffset = null;
+            if (horizontalOffset != null)
+            {
+                hOffset = ScrollViewer.HorizontalOffset + horizontalOffset;
+            }
+            double? vOffset = null;
+            if (verticalOffset != null)
+            {
+                vOffset = ScrollViewer.VerticalOffset + verticalOffset;
+            }
+            ScrollViewer.ChangeView(hOffset, vOffset, null);
+        });
+    }
+
+    private void OnRotate(int degrees)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Status.Text = $"Rotate message {degrees}";
+            double currentRotation = (Image.RenderTransform as RotateTransform)?.Angle ?? 0;
+
+            Image.RenderTransform = new RotateTransform() { Angle = currentRotation += degrees };
+            OnZoomToFit();
+        });
+    }
+
+    private void OnZoom(float zoomAdjustment)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ScrollViewer.ChangeView(null, null, ScrollViewer.ZoomFactor + zoomAdjustment);
+        });
+    }
+
+    private void OnZoomToFit()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (Image.ActualWidth > 0 && Image.ActualHeight > 0)
+            {
+                bool verticalOrientation = false;
+                if (Image.RenderTransform is RotateTransform rotate)
+                {
+                    var angle = rotate.Angle % 360;
+                    if (angle > 45 && angle < 135)
+                    {
+                        verticalOrientation = true;
+                    }
+                    else if (angle > 135 + 90 && angle < 135 + 180)
+                    {
+                        verticalOrientation = true;
+                    }
+                }
+                double verticalZoom;
+                double horizontalZoom;
+                if (verticalOrientation)
+                {
+                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualWidth;
+                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualHeight;
+                }
+                else
+                {
+                    verticalZoom = ScrollViewer.ViewportHeight / Image.ActualHeight;
+                    horizontalZoom = ScrollViewer.ViewportWidth / Image.ActualWidth;
+                }
+                var zoom = (float)Math.Min(verticalZoom, horizontalZoom);
+                ScrollViewer.ChangeView(Image.Margin.Left * zoom, Image.Margin.Top * zoom, zoom);
+            }
+        });
+    }
+
+    private async void OnTableConfigurationUpdated(TableConfiguration tableConfiguration)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Status.Text = $"Setting table config";
+        });
+
+        if (tableConfiguration.Compass is { } compassConfig)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                Compass.Visibility = compassConfig.IsShown ? Visibility.Visible : Visibility.Collapsed;
+                Compass.Width = Compass.Height = compassConfig.Size;
+                Compass.Foreground = compassConfig.Color.ToBrush();
+            });
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Status.Text = $"Loading image...";
+        });
+
+        if (_imageManager is { } imageManager &&
+            tableConfiguration.CurrentResourceId is { })
+        {
+            Stream imageStream = await imageManager.GetImage(tableConfiguration.CurrentResourceId, null);
+            await LoadImage(imageManager, imageStream);
         }
     }
 

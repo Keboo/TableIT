@@ -1,6 +1,8 @@
-﻿namespace TableIT.Server.Hubs;
+﻿using TableIT.Shared;
 
-public record class TableState(string TableId)
+namespace TableIT.Server.Hubs;
+
+public record class TableState(string TableId, TableConfiguration? TableConfiguration)
 {
     public string? TableConnectionId { get; set; }
 

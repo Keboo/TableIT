@@ -28,7 +28,6 @@ public class TableHub : Hub
         TableState _ = await TableManager.AddViewerConnectionToTableAsync(tableId, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
         return true;
-        //await Clients.Groups(tableId).SendAsync("", )
     }
 
     [HubMethodName(BaseTableConnection.ConnectRemoteToTableMethodName)]
@@ -37,13 +36,12 @@ public class TableHub : Hub
         TableState _ = await TableManager.AddRemoteConnectionToTableAsync(tableId, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
         return true;
-        //await Clients.Groups(tableId).SendAsync("", )
     }
 
     [HubMethodName(BaseTableConnection.ConnectAsTableMethodName)]
     public async Task ConnectAsTableAsync(string tableId, TableConfiguration tableConfiguration)
     {
-        TableState _ = await TableManager.AddTableConnectionAsync(tableId, Context.ConnectionId);
+        TableState _ = await TableManager.AddTableConnectionAsync(tableId, tableConfiguration, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
         await Clients.OthersInGroup(tableId).SendAsync(BaseTableConnection.TableConfigurationUpdatedMethodName, tableConfiguration);
     }
@@ -51,12 +49,75 @@ public class TableHub : Hub
     [HubMethodName(BaseTableConnection.GetTableConfigurationMethodName)]
     public async Task<TableConfiguration?> GetTableConfigurationAsync()
     {
-        if (await TableManager.GetTableStateAsync(Context.ConnectionId) is { } tableState &&
-            !string.IsNullOrWhiteSpace(tableState.TableConnectionId))
+        if (await TableManager.GetTableStateAsync(Context.ConnectionId) is { } tableState)
         {
-            return await Clients.Client(tableState.TableConnectionId)
-                .InvokeAsync<TableConfiguration>(BaseTableConnection.GetTableConfigurationMethodName, Context.ConnectionAborted);
+            return tableState.TableConfiguration;
         }
         return null;
+    }
+
+    [HubMethodName(BaseTableConnection.SetCurrentImageMethodName)]
+    public async Task<TableConfiguration?> SetCurrentImageAsync(string resourceId)
+    {
+        if (await TableManager.UpdateTableStateAsync(Context.ConnectionId, tableState =>
+        {
+            return tableState with 
+            { 
+                TableConfiguration = (tableState.TableConfiguration ?? new(null, null)) with 
+                { 
+                    CurrentResourceId = resourceId 
+                }
+            };
+        }) is { } tableState)
+        {
+            await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
+                .SendAsync(BaseTableConnection.TableConfigurationUpdatedMethodName, tableState.TableConfiguration);
+            return tableState.TableConfiguration;
+        }
+        return null;
+    }
+
+    [HubMethodName(BaseTableConnection.ZoomMethodName)]
+    public async Task ZoomAsync(float zoomAdjustment)
+    {
+        TableState? tableState = await TableManager.GetTableStateAsync(Context.ConnectionId);
+        if (tableState?.RemoteConnections.Contains(Context.ConnectionId) == true)
+        {
+            await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
+                .SendAsync(BaseTableConnection.ZoomMethodName, zoomAdjustment);
+        }
+    }
+
+    [HubMethodName(BaseTableConnection.ZoomToFitMethodName)]
+    public async Task ZoomToFitAsync()
+    {
+        TableState? tableState = await TableManager.GetTableStateAsync(Context.ConnectionId);
+        if (tableState?.RemoteConnections.Contains(Context.ConnectionId) == true)
+        {
+            await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
+                .SendAsync(BaseTableConnection.ZoomToFitMethodName);
+        }
+    }
+
+    [HubMethodName(BaseTableConnection.RotateMethodName)]
+    public async Task RotateAsync(int degrees)
+    {
+        TableState? tableState = await TableManager.GetTableStateAsync(Context.ConnectionId);
+        if (tableState?.RemoteConnections.Contains(Context.ConnectionId) == true)
+        {
+            await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
+                .SendAsync(BaseTableConnection.RotateMethodName, degrees);
+        }
+    }
+
+    [HubMethodName(BaseTableConnection.PanMethodName)]
+    public async Task PanAsync(int? horizontalOffset, int? verticalOffset)
+    {
+        TableState? tableState = await TableManager.GetTableStateAsync(Context.ConnectionId);
+        if (tableState?.RemoteConnections.Contains(Context.ConnectionId) == true)
+        {
+            await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
+                .SendAsync(BaseTableConnection.PanMethodName, horizontalOffset, verticalOffset);
+        }
     }
 }

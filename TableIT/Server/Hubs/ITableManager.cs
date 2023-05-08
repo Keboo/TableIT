@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using TableIT.Shared;
 
 namespace TableIT.Server.Hubs;
 
@@ -6,9 +7,10 @@ public interface ITableManager
 {
     Task<TableState> AddViewerConnectionToTableAsync(string tableId, string connectionId);
     Task<TableState> AddRemoteConnectionToTableAsync(string tableId, string connectionId);
-    Task<TableState> AddTableConnectionAsync(string tableId, string connectionId);
+    Task<TableState> AddTableConnectionAsync(string tableId, TableConfiguration tableConfiguration, string connectionId);
 
     Task<TableState?> GetTableStateAsync(string connectionId);
+    Task<TableState?> UpdateTableStateAsync(string connectionId, Func<TableState, TableState> updateTableState);
 }
 
 public class InMemoryTableManager : ITableManager
@@ -23,7 +25,7 @@ public class InMemoryTableManager : ITableManager
 
         return WithLock(tableId, () =>
         {
-            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId), (_, existing) =>
+            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, null), (_, existing) =>
             {
                 return existing with
                 {
@@ -40,7 +42,7 @@ public class InMemoryTableManager : ITableManager
 
         return WithLock(tableId, () =>
         {
-            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId), (_, existing) =>
+            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, null), (_, existing) =>
             {
                 return existing with
                 {
@@ -51,17 +53,18 @@ public class InMemoryTableManager : ITableManager
         });
     }
 
-    public Task<TableState> AddTableConnectionAsync(string tableId, string connectionId)
+    public Task<TableState> AddTableConnectionAsync(string tableId, TableConfiguration tableConfiguration, string connectionId)
     {
         ConnectionsToTable.AddOrUpdate(connectionId, tableId, (_, _) => tableId);
 
         return WithLock(tableId, () =>
         {
-            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId) {  TableConnectionId = connectionId }, (_, existing) =>
+            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, tableConfiguration) {  TableConnectionId = connectionId }, (_, existing) =>
             {
                 return existing with
                 {
-                    TableConnectionId = connectionId
+                    TableConnectionId = connectionId,
+                    TableConfiguration = tableConfiguration
                 };
             });
             return Task.FromResult(rv);
@@ -71,6 +74,18 @@ public class InMemoryTableManager : ITableManager
     public Task<TableState?> GetTableStateAsync(string connectionId)
     {
         return WithConnection(connectionId, table => table);
+    }
+
+    public Task<TableState?> UpdateTableStateAsync(string connectionId, Func<TableState, TableState> updateTableState)
+    {
+        return WithConnection(connectionId, tableState => 
+        {
+            if (tableState.IsRemote(connectionId))
+            {
+                return updateTableState(tableState);
+            }
+            return tableState;
+        });
     }
 
     private Task<TableState?> WithConnection(string connectionId, Func<TableState, TableState?> updateTable)

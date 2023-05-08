@@ -9,12 +9,12 @@ namespace TableIT.Win;
 
 internal class ImageManager
 {
-    private IImageService Client { get; }
+    private IImageService ImageService { get; }
     public IResourcePersistence Persistence { get; }
 
-    public ImageManager(IImageService client, IResourcePersistence persistence)
+    public ImageManager(IImageService imageService, IResourcePersistence persistence)
     {
-        Client = client;
+        ImageService = imageService;
         Persistence = persistence;
     }
 
@@ -28,30 +28,36 @@ internal class ImageManager
         return null;
     }
 
-    public async Task<Stream?> GetImage(string id, string? version)
+    public async Task<Stream> GetImage(string id, string? version)
     {
-        /*
-        if (await Client.GetImageUrl(id, version) is { } current)
-        {
-            IReadOnlyList<ResourceData> data = await Persistence.GetAll();
-            Dictionary<string, ResourceData> keyed = new();
+        IReadOnlyList<ResourceData> data = await Persistence.GetAll();
+        Dictionary<string, ResourceData> keyed = new();
 
-            foreach (var item in data)
+        ResourceData? resourceData = null;
+        foreach (var item in data)
+        {
+            item.IsCurrent = false;
+            if (item.Id == id)
             {
-                item.IsCurrent = false;
-                keyed[item.Id] = item;
+                resourceData = item;
+
             }
-            if (!keyed.TryGetValue(id, out var resourceData))
-            {
-                resourceData = new ResourceData(id, version);
-                keyed[id] = resourceData;
-            }
-            resourceData.IsCurrent = true;
-            await Persistence.Save(keyed.Values);
-            return current;
+            keyed[item.Id] = item;
         }
-        */
-        return null;
+        if (resourceData is null)
+        {
+            resourceData = new(id, version);
+            keyed[id] = resourceData;
+        }
+        resourceData.IsCurrent = true;
+        await Persistence.Save(keyed.Values);
+        
+        //NB: Must copy the stream because to load the bitmap it must support seeking
+        using Stream stream = await ImageService.GetImageAsync(id);
+        MemoryStream ms = new();
+        await stream.CopyToAsync(ms);
+        ms.Position = 0;
+        return ms;
     }
 
     public async Task UpdateCurrentImageData(double horizontalOffset, double verticalOffset, float zoomFactor)
