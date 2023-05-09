@@ -5,12 +5,14 @@ namespace TableIT.Server.Hubs;
 
 public class TableHub : Hub
 {
-    public TableHub(ITableManager tableManager)
+    public TableHub(ITableManager tableManager, ILogger<TableHub> logger)
     {
         TableManager = tableManager;
+        Logger = logger;
     }
 
     public ITableManager TableManager { get; }
+    public ILogger<TableHub> Logger { get; }
 
     public override async Task OnConnectedAsync()
     {
@@ -23,10 +25,11 @@ public class TableHub : Hub
     }
 
     [HubMethodName(BaseTableConnection.ConnectToTableMethodName)]
-    public async Task<bool> ConnectToTableAsync(string tableId)
+    public async Task<bool> ConnectViewerToTableAsync(string tableId)
     {
         TableState _ = await TableManager.AddViewerConnectionToTableAsync(tableId, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
+        Logger.UserConnectedToTable(tableId, "Viewer", Context.ConnectionId);
         return true;
     }
 
@@ -35,6 +38,7 @@ public class TableHub : Hub
     {
         TableState _ = await TableManager.AddRemoteConnectionToTableAsync(tableId, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
+        Logger.UserConnectedToTable(tableId, "Remote", Context.ConnectionId);
         return true;
     }
 
@@ -43,6 +47,7 @@ public class TableHub : Hub
     {
         TableState _ = await TableManager.AddTableConnectionAsync(tableId, tableConfiguration, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
+        Logger.UserConnectedToTable(tableId, "Table", Context.ConnectionId);
         await Clients.OthersInGroup(tableId).SendAsync(BaseTableConnection.TableConfigurationUpdatedMethodName, tableConfiguration);
     }
 
@@ -51,8 +56,10 @@ public class TableHub : Hub
     {
         if (await TableManager.GetTableStateAsync(Context.ConnectionId) is { } tableState)
         {
+            Logger.GetTableConfiguration(tableState.TableId, Context.ConnectionId);
             return tableState.TableConfiguration;
         }
+        Logger.GetTableConfigurationNotFound(Context.ConnectionId);
         return null;
     }
 
@@ -61,17 +68,18 @@ public class TableHub : Hub
     {
         if (await TableManager.UpdateTableStateAsync(Context.ConnectionId, tableState =>
         {
-            return tableState with 
-            { 
-                TableConfiguration = (tableState.TableConfiguration ?? new(null, null)) with 
-                { 
-                    CurrentResourceId = resourceId 
+            return tableState with
+            {
+                TableConfiguration = (tableState.TableConfiguration ?? new(null, null)) with
+                {
+                    CurrentResourceId = resourceId
                 }
             };
         }) is { } tableState)
         {
             await Clients.GroupExcept(tableState.TableId, tableState.RemoteConnections)
                 .SendAsync(BaseTableConnection.TableConfigurationUpdatedMethodName, tableState.TableConfiguration);
+            Logger.SetCurrentImage(tableState.TableId, resourceId, Context.ConnectionId);
             return tableState.TableConfiguration;
         }
         return null;

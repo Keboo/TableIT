@@ -98,7 +98,7 @@
 
             TableConnection.TableConfigurationUpdated += OnTableConfigurationUpdated;
 
-            Status = "Getting table configuration";
+            Status = $"Getting table configuration for {tableId}";
             if (await TableConnection.GetTableConfigurationAsync() is { } tableConfig)
             {
                 if (!string.IsNullOrWhiteSpace(tableConfig.CurrentResourceId))
@@ -108,7 +108,7 @@
                 }
                 else
                 {
-                    Status = "No current image";
+                    Status = $"No current image for {tableId}";
                 }
             }
             else
