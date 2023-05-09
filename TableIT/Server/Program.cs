@@ -68,7 +68,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
 app.MapHub<TableHub>($"/{nameof(TableHub)}");
 
