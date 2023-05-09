@@ -1,0 +1,34 @@
+﻿@page "/upload"
+@using System.Security.Claims
+@using Azure.Identity
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@using Microsoft.AspNetCore.Authorization;
+
+@attribute [Authorize]
+
+<InputFile OnChange="@LoadFile" />
+
+<p>@Status</p>
+
+@code {
+    private string Status { get; set; } = "";
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        if (e.File is { } file)
+        {
+            Status = $"Uploading {e.File.Name}...";
+            Uri accountUri = new Uri("https://tableitstorage.blob.core.windows.net/");
+            BlobServiceClient client = new BlobServiceClient(accountUri, new DefaultAzureCredential());
+            BlobContainerClient containerClient = client.GetBlobContainerClient("resources");
+            BlobClient blobClient = containerClient.GetBlobClient(file.Name + Guid.NewGuid());
+            using Stream fileStream = file.OpenReadStream(maxAllowedSize:5_000_000);
+            BlobContentInfo _ = await blobClient.UploadAsync(fileStream);
+            Dictionary<string, string> metadata = new();
+            metadata["DisplayName"] = file.Name;
+            await blobClient.SetMetadataAsync(metadata);
+            Status = "Done";
+        }
+    }
+}
