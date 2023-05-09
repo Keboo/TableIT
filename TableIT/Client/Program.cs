@@ -22,7 +22,11 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().Cre
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetSection("ServerApi")["Scopes"]);
+    foreach(var scopes in builder.Configuration.GetSection("ServerApi")["Scopes"]?.Split(' ') ?? Enumerable.Empty<string>())
+    {
+        options.ProviderOptions.DefaultAccessTokenScopes.Add(scopes);
+    }
+    options.UserOptions.RoleClaim = "roles";
 });
 
 builder.Services.AddSingleton<ITableViewerConnection>(x => new TableViewerConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
