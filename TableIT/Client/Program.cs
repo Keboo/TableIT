@@ -19,11 +19,11 @@ builder.Services.AddHttpClient("TableIT.ServerAPI", client => client.BaseAddress
 // Supply HttpClient instances that include access tokens when making requests to the server project
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("TableIT.ServerAPI"));
 
-//builder.Services.AddMsalAuthentication(options =>
-//{
-//    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-//    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetSection("ServerApi")["Scopes"]);
-//});
+builder.Services.AddMsalAuthentication(options =>
+{
+    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetSection("ServerApi")["Scopes"]);
+});
 
 builder.Services.AddSingleton<ITableViewerConnection>(x => new TableViewerConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
 builder.Services.AddSingleton<ITableRemoteConnection>(x => new TableRemoteConnection(x.GetRequiredService<NavigationManager>().ToAbsoluteUri("/TableHub")));
