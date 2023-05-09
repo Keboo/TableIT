@@ -2,7 +2,7 @@
 
 namespace TableIT.Server.Hubs;
 
-public record class TableState(string TableId, TableConfiguration? TableConfiguration)
+public record class TableState(string TableId, TableConfiguration TableConfiguration)
 {
     public string? TableConnectionId { get; set; }
 

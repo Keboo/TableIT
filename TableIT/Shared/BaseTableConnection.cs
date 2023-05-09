@@ -35,7 +35,7 @@ public abstract class BaseTableConnection : IBaseTableConnection
 
     public Task DisconnectAsync()
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public virtual async Task<bool> ConnectAsync(string tableId)

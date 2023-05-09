@@ -25,7 +25,7 @@ public class InMemoryTableManager : ITableManager
 
         return WithLock(tableId, () =>
         {
-            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, null), (_, existing) =>
+            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, TableConfiguration.Empty), (_, existing) =>
             {
                 return existing with
                 {
@@ -42,7 +42,7 @@ public class InMemoryTableManager : ITableManager
 
         return WithLock(tableId, () =>
         {
-            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, null), (_, existing) =>
+            TableState rv = Tables.AddOrUpdate(tableId, new TableState(tableId, TableConfiguration.Empty), (_, existing) =>
             {
                 return existing with
                 {
