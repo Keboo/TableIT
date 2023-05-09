@@ -151,7 +151,7 @@ public sealed partial class MainWindow : Window
             });
             */
 
-            string tableId = Debugger.IsAttached ? "DEBUG1" : TableId.Generate();
+            string tableId = (Debugger.IsAttached ? "DEBUG1" : TableId.Generate()).ToUpperInvariant();
             await _tableConnection.ConnectAsync(tableId);
             DispatcherQueue.TryEnqueue(
             () =>

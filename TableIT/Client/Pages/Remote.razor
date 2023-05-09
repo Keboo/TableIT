@@ -181,7 +181,7 @@
 
     private async Task DoConnection()
     {
-        string? tableId = Model.TableId;
+        string? tableId = Model.TableId?.ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(tableId)) return;
 
         Status = "Connecting";

@@ -70,7 +70,7 @@ public class TableHub : Hub
         {
             return tableState with
             {
-                TableConfiguration = (tableState.TableConfiguration ?? new(null, null)) with
+                TableConfiguration = tableState.TableConfiguration with
                 {
                     CurrentResourceId = resourceId
                 }
