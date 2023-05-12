@@ -23,6 +23,8 @@ public abstract class BaseTableConnection : IBaseTableConnection
     public bool IsConnected => HubConnection.State == HubConnectionState.Connected;
 
     public Uri HubUrl { get; }
+
+    public string? TableId { get; private set; }
     
     public BaseTableConnection(Uri url)
     {
@@ -51,6 +53,7 @@ public abstract class BaseTableConnection : IBaseTableConnection
                 }
             );
         await retryPolicy.ExecuteAsync(() => HubConnection.StartAsync());
+        TableId = tableId;
         return true;
     }
 

@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using TableIT.Shared;
 using TableIT.Shared.Resources;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace TableIT.Win;
 
@@ -22,7 +23,7 @@ public sealed partial class MainWindow : Window
 #if DEBUG
         = Debugger.IsAttached ? new("https://localhost:7031/") : new("https://tableit.azurewebsites.net/");
 #else
-        = new("https://tableit.azurewebsites.net/")
+        = new("https://tableit.azurewebsites.net/");
 #endif
 
     private ImageManager? _imageManager;
@@ -289,13 +290,12 @@ public sealed partial class MainWindow : Window
 
     private void CopyTableId(object sender, RoutedEventArgs e)
     {
-        /*
-        if (_tableConnection?.UserId is { } tableId)
+        if (_tableConnection?.TableId is { } tableId)
         {
             DataPackage dataPackage = new();
             dataPackage.SetText(tableId);
             Clipboard.SetContent(dataPackage);
         }
-        */
+
     }
 }
